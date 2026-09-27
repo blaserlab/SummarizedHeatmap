@@ -1,3 +1,13 @@
 ^SummarizedHeatmap\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^\.gitignore$
+^\.github$
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^AGENTS\.md$
+^library_catalogs$
+^\.agents$
+^\.codex$
+^tests/testthat/Rplots\.pdf$
