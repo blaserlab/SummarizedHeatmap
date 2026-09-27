@@ -14,11 +14,11 @@ ggplot2 and patchwork objects that remain open to standard customization.
 \code{\link[SummarizedExperiment:SummarizedExperiment]{SummarizedExperiment::SummarizedExperiment()}}
 }
 \author{
-\strong{Maintainer}: Bradley Blaser \email{bradley.blaser@osumc.edu}
+\strong{Maintainer}: Bradley Blaser \email{bradley.blaser@osumc.edu} (\href{https://orcid.org/0000-0002-3168-5423}{ORCID})
 
 Authors:
 \itemize{
-  \item Bradley Blaser \email{bradley.blaser@osumc.edu}
+  \item Bradley Blaser \email{bradley.blaser@osumc.edu} (\href{https://orcid.org/0000-0002-3168-5423}{ORCID})
 }
 
 }

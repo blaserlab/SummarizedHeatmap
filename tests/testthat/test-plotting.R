@@ -1,11 +1,15 @@
 test_that("component plots have the documented classes", {
     x <- make_heatmap()
+    SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
     expect_s3_class(plotHeatmapMain(x), "ggplot")
     expect_s3_class(plotRowDendro(x), "ggplot")
     expect_s3_class(plotColDendro(x), "ggplot")
     expect_s3_class(plotRowData(x, vars = "feature_type"), "ggplot")
     expect_s3_class(plotColData(x, vars = "condition"), "ggplot")
     expect_s3_class(plotRowData(x, vars = c("Feature" = "feature_type", "Again" = "feature_type2")), "patchwork")
+    expect_s3_class(plotColData(x, vars = c("Condition" = "condition", "Batch" = "batch")), "patchwork")
+    expect_s3_class(plotRowDendro(x)$coordinates, "CoordFlip")
+    expect_equal(plotColData(x, vars = c("Condition" = "condition", "Batch" = "batch"))$patches$layout$ncol, 1L)
     expect_s3_class(plotHeatmap(x), "patchwork")
 })
 

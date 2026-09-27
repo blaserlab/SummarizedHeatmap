@@ -9,7 +9,8 @@ plotColDendro(x, side = "top", linewidth = 0.5)
 \arguments{
 \item{x}{A SummarizedHeatmap object.}
 
-\item{side}{Side on which the dendrogram is oriented.}
+\item{side}{Side on which the dendrogram is oriented. The default places
+leaves toward the heatmap when shown to its left.}
 
 \item{linewidth}{Dendrogram line width.}
 }

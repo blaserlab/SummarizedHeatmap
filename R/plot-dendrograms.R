@@ -1,7 +1,8 @@
 #' Plot the stored row dendrogram
 #'
 #' @param x A SummarizedHeatmap object.
-#' @param side Side on which the dendrogram is oriented.
+#' @param side Side on which the dendrogram is oriented. The default places
+#'   leaves toward the heatmap when shown to its left.
 #' @param linewidth Dendrogram line width.
 #' @return A ggplot object.
 #' @examples
@@ -40,7 +41,7 @@ plotColDendro <- function(x, side = "top", linewidth = 0.5) {
         if (side == "bottom") p <- p + ggplot2::scale_y_reverse()
     } else {
         p <- ggplot2::ggplot(segments) +
-            ggplot2::geom_segment(ggplot2::aes(x = y, y = x, xend = yend, yend = xend), linewidth = linewidth) +
+            ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend), linewidth = linewidth) +
             ggplot2::coord_flip()
         if (side == "left") p <- p + ggplot2::scale_y_reverse()
     }

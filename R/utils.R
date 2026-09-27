@@ -75,7 +75,13 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
             palette = palette
         )
     })
-    if (length(plots) == 1L) plots[[1L]] else patchwork::wrap_plots(plots, guides = "keep")
+    if (length(plots) == 1L) {
+        plots[[1L]]
+    } else if (margin == 2L && side %in% c("top", "bottom")) {
+        patchwork::wrap_plots(plots, ncol = 1L, guides = "keep")
+    } else {
+        patchwork::wrap_plots(plots, guides = "keep")
+    }
 }
 
 .annotation_plot <- function(value, axis_ids, label, side, tileColor, palette) {

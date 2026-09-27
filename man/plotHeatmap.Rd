@@ -10,6 +10,10 @@ plotHeatmap(
   colVars = NULL,
   showRowDendro = TRUE,
   showColDendro = TRUE,
+  rowDendroSide = "left",
+  colDendroSide = "top",
+  rowAnnotationSide = "right",
+  colAnnotationSide = "top",
   collectGuides = TRUE,
   ...
 )
@@ -22,6 +26,12 @@ includes all available variables.}
 
 \item{showRowDendro, showColDendro}{Whether to display stored dendrograms.}
 
+\item{rowDendroSide, colDendroSide}{Orientation sides passed to the
+dendrogram component plotters.}
+
+\item{rowAnnotationSide, colAnnotationSide}{Placement sides passed to the
+annotation component plotters.}
+
 \item{collectGuides}{Collect guides into a shared guide area.}
 
 \item{...}{Additional arguments passed to \code{plotHeatmapMain()}.}
@@ -33,7 +43,9 @@ A patchwork object.
 The component plots remain available through their individual plotting
 functions. This helper arranges them in a fixed layout and collects guides
 in grid traversal order: column dendrogram, column annotations, row
-annotations, row dendrogram, then the main heatmap. Pass named variable
+dendrogram, row annotations, then the main heatmap. Column annotation plots
+are stacked vertically; the row dendrogram and row annotations sit to the
+left of the heatmap in that order. Pass named variable
 vectors to \code{rowVars} or \code{colVars} to control annotation strip labels.
 }
 \examples{
