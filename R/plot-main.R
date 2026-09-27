@@ -35,7 +35,8 @@ plotHeatmapMain <- function(x, tileColor = "white", high = "red3",
             ggplot2::theme(
                 axis.text = ggplot2::element_text(colour = "black"),
                 panel.grid = ggplot2::element_blank(),
-                panel.border = ggplot2::element_rect(fill = NA, colour = "black")
+                panel.border = ggplot2::element_rect(fill = NA, colour = "black"),
+                plot.margin = ggplot2::margin(2, 2, 2, 2)
             )
     } else {
         ggplot2::ggplot(data, ggplot2::aes(y = column, x = row, fill = value)) +
@@ -48,7 +49,8 @@ plotHeatmapMain <- function(x, tileColor = "white", high = "red3",
             ggplot2::theme(
                 axis.text = ggplot2::element_text(colour = "black"),
                 panel.grid = ggplot2::element_blank(),
-                panel.border = ggplot2::element_rect(fill = NA, colour = "black")
+                panel.border = ggplot2::element_rect(fill = NA, colour = "black"),
+                plot.margin = ggplot2::margin(2, 2, 2, 2)
             )
     }
 }

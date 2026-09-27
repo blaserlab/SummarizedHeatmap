@@ -117,7 +117,9 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
             axis.title = ggplot2::element_blank(),
             axis.text.x = if (showNames) ggplot2::element_text() else ggplot2::element_blank(),
             axis.text.y = if (showNames) ggplot2::element_text() else ggplot2::element_blank(),
-            panel.grid = ggplot2::element_blank()
+            panel.grid = ggplot2::element_blank(),
+            panel.border = ggplot2::element_rect(fill = NA, colour = "black", linewidth = 0.25),
+            plot.margin = ggplot2::margin(2, 2, 2, 2)
         )
     if (!is.null(palette)) p <- p + ggplot2::scale_fill_manual(values = palette)
     p

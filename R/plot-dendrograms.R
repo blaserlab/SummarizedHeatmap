@@ -51,12 +51,10 @@ plotColDendro <- function(x, side = "top", linewidth = 0.5) {
         segments$x <- segments$x - 0.5
         segments$xend <- segments$xend - 0.5
         p <- ggplot2::ggplot(segments) +
-            ggplot2::geom_segment(ggplot2::aes(x = y, y = x, xend = yend, yend = xend), linewidth = linewidth) +
-            ggplot2::scale_y_continuous(
-                limits = c(0, n), expand = ggplot2::expansion(add = 0),
-                trans = if (side == "left") "reverse" else "identity"
-            ) +
+            ggplot2::geom_segment(ggplot2::aes(x = x, y = y, xend = xend, yend = yend), linewidth = linewidth) +
+            ggplot2::scale_x_continuous(limits = c(0, n), expand = ggplot2::expansion(add = 0)) +
             ggplot2::coord_flip()
+        if (side == "left") p <- p + ggplot2::scale_y_reverse()
     }
     p + ggplot2::theme_void() + ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0))
 }

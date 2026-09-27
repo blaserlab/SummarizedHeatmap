@@ -147,19 +147,16 @@ traversal order so collected guides are predictable: column dendrogram,
 column annotations, row dendrogram, row annotations, then the main heatmap.
 
 ```{r custom-layout}
-side_by_side <- patchwork::wrap_plots(
+stacked <- patchwork::wrap_plots(
     list(column_tree, main),
-    ncol = 2, widths = c(1, 5), guides = "collect"
+    ncol = 1, heights = c(1, 5), guides = "collect"
 )
-side_by_side
+stacked
 ```
 
 ```{r free-layout}
-custom <- (
-    patchwork::free(column_annotation, side = "r", type = "space") |
-        main |
-        patchwork::guide_area()
-) + patchwork::plot_layout(widths = c(1, 5, 1), guides = "collect")
+custom <- (column_annotation / main) +
+    patchwork::plot_layout(heights = c(1, 5), guides = "collect")
 custom
 ```
 
@@ -168,15 +165,19 @@ patchwork operations. Here a small sample-level summary plot sits beside the
 heatmap.
 
 ```{r extra-plot}
+display_samples <- colnames(mat)[colOrder(hm)]
 qc <- ggplot2::ggplot(
-    data.frame(sample = colnames(mat), mean = colMeans(mat)),
+    data.frame(
+        sample = factor(display_samples, levels = display_samples),
+        mean = colMeans(mat)[display_samples]
+    ),
     ggplot2::aes(x = sample, y = mean)
 ) +
     ggplot2::geom_point() +
     ggplot2::labs(x = NULL, y = "Mean assay value") +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 
-qc + main + patchwork::plot_layout(ncol = 2)
+(qc / main) + patchwork::plot_layout(heights = c(1, 5))
 ```
 
 # Subsetting and reclustering
