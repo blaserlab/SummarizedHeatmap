@@ -43,7 +43,7 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
     list(dendrogram = dendrogram, order = as.integer(order.dendrogram(dendrogram)))
 }
 
-.annotation_plots <- function(x, margin, vars, side, tileColor, palette) {
+.annotation_plots <- function(x, margin, vars, side, tileColor, palette, showNames) {
     metadata <- if (margin == 1L) SummarizedExperiment::rowData(x) else SummarizedExperiment::colData(x)
     data <- as.data.frame(metadata)
     ids <- .axis_ids(x, margin)
@@ -72,19 +72,22 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
             label = labels[i],
             side = side,
             tileColor = tileColor,
-            palette = palette
+            palette = palette,
+            showNames = showNames
         )
     })
     if (length(plots) == 1L) {
         plots[[1L]]
     } else if (margin == 2L && side %in% c("top", "bottom")) {
-        patchwork::wrap_plots(plots, ncol = 1L, guides = "keep")
+        # `auto` lets a containing plotHeatmap() collect these guides into its
+        # shared guide area while retaining a standalone component patchwork.
+        patchwork::wrap_plots(plots, ncol = 1L, guides = "auto")
     } else {
-        patchwork::wrap_plots(plots, guides = "keep")
+        patchwork::wrap_plots(plots, guides = "auto")
     }
 }
 
-.annotation_plot <- function(value, axis_ids, label, side, tileColor, palette) {
+.annotation_plot <- function(value, axis_ids, label, side, tileColor, palette, showNames) {
     if (is.list(value) && !is.factor(value)) {
         stop("annotation values must be atomic vectors", call. = FALSE)
     }
@@ -112,6 +115,8 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
         ggplot2::theme_minimal() +
         ggplot2::theme(
             axis.title = ggplot2::element_blank(),
+            axis.text.x = if (showNames) ggplot2::element_text() else ggplot2::element_blank(),
+            axis.text.y = if (showNames) ggplot2::element_text() else ggplot2::element_blank(),
             panel.grid = ggplot2::element_blank()
         )
     if (!is.null(palette)) p <- p + ggplot2::scale_fill_manual(values = palette)

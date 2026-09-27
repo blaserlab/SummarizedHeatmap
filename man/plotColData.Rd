@@ -4,7 +4,14 @@
 \alias{plotColData}
 \title{Plot column annotations}
 \usage{
-plotColData(x, vars = NULL, side = "top", tileColor = "white", palette = NULL)
+plotColData(
+  x,
+  vars = NULL,
+  side = "top",
+  tileColor = "white",
+  palette = NULL,
+  showNames = FALSE
+)
 }
 \arguments{
 \item{x}{A SummarizedHeatmap object.}
@@ -17,6 +24,8 @@ names as displayed labels.}
 \item{tileColor}{Tile border colour.}
 
 \item{palette}{Optional named values passed to \code{scale_fill_manual()}.}
+
+\item{showNames}{Whether to display row or column names on the annotation axis.}
 }
 \value{
 A ggplot for one variable, a patchwork for multiple variables, or a

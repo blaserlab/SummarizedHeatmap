@@ -9,7 +9,8 @@ plotRowData(
   vars = NULL,
   side = "right",
   tileColor = "white",
-  palette = NULL
+  palette = NULL,
+  showNames = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ names as displayed labels.}
 \item{tileColor}{Tile border colour.}
 
 \item{palette}{Optional named values passed to \code{scale_fill_manual()}.}
+
+\item{showNames}{Whether to display row or column names on the annotation axis.}
 }
 \value{
 A ggplot for one variable, a patchwork for multiple variables, or a
