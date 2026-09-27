@@ -1,10 +1,30 @@
 Package: SummarizedHeatmap
-Title: What the Package Does (One Line, Title Case)
+Title: Heatmaps for SummarizedExperiment Objects
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R:
+    person("Bradley", "Blaser", email = "bradley.blaser@osumc.edu",
+           role = c("aut", "cre"))
+Description: Provides a SummarizedExperiment-derived class and plotting
+    functions for heatmaps with row and column annotations, dendrograms,
+    and highlighted features.
 License: MIT + file LICENSE
+biocViews: Software, Visualization
+Imports:
+    cli,
+    cowplot,
+    dplyr,
+    ggdendro,
+    ggrepel,
+    ggplot2,
+    patchwork,
+    purrr,
+    S4Vectors,
+    SummarizedExperiment,
+    tidyr
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
