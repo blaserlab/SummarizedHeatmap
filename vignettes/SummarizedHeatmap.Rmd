@@ -199,19 +199,18 @@ qc <- ggplot2::ggplot(
 
 Component functions also compose directly with `wrap_plots()`'s named-argument
 form, letting a custom `design` string place each panel (and
-`guide_area()`) anywhere in the grid -- including a guide column that spans
-the full plot height rather than only the main panel's row, as
-`plotHeatmap()` itself now does. `palette` on `plotColData()`/`plotRowData()`
-maps annotation levels to specific colours (via `scale_fill_manual()`); call
-each variable separately when different variables need different palettes,
-since a single call's `palette` applies to every variable it plots.
+`guide_area()`) anywhere in the grid. `palette` on `plotColData()`/`plotRowData()`
+maps annotation levels to specific colours (via `scale_fill_manual()`); a single call's `palette` applies to every variable it plots.
 
 ```{r custom-grid}
 row_palette <- c(marker = "#8DA0CB", background = "#E5C494")
-col_palette <- c(control = "#66C2A5", treated = "#FC8D62")
+col_palette <- c(control = "#66C2A5", 
+                 treated = "#FC8D62", 
+                 `batch 1` = "#386CB0", 
+                 `batch 2` = "#F0027F")
 
 pColDendro <- plotColDendro(hm)
-pColData <- plotColData(hm, vars = "condition", palette = col_palette)
+pColData <- plotColData(hm, palette = col_palette)
 pRowDendro <- plotRowDendro(hm)
 pRowData <- patchwork::free(
     plotRowData(hm, vars = "feature_class", side = "left", palette = row_palette),
