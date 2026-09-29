@@ -163,9 +163,15 @@ instead: each list element is kept as one area regardless of how many panels
 it contains internally, so the annotation strip stays aligned with the
 heatmap and its guides are still collected normally.
 
+Each annotation panel also labels its variable as axis text next to the
+tiles. Wrapping the annotation in `patchwork::free(type = "space")` lets that
+text occupy space without reserving room for it in the shared grid, so it
+packs tightly against the heatmap instead of forcing extra column/row width
+(`plotHeatmap()` does this internally for every annotation strip).
+
 ```{r free-layout}
 custom <- patchwork::wrap_plots(
-    list(column_annotation, main),
+    list(patchwork::free(column_annotation, type = "space"), main),
     ncol = 1, heights = c(1, 5), guides = "collect"
 )
 custom

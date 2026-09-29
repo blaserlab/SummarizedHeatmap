@@ -12,12 +12,26 @@ test_that("component plots have the documented classes", {
     expect_s3_class(plotHeatmap(x), "patchwork")
 })
 
-test_that("annotation tiles always label their variable as axis text", {
+test_that("annotation tiles label their variable with axis text matching the main heatmap's theme", {
     x <- make_heatmap()
+    main_theme <- plotHeatmapMain(x)$theme
+    expect_equal(main_theme$axis.text$colour, "black")
+    expect_equal(main_theme$axis.text.y$hjust, 0)
+
+    # Column annotations (side = "top"/"bottom"): the variable-name axis is
+    # `y`, always drawn on the right like the main heatmap's row labels, so
+    # it should be justified and coloured the same way.
     col_plot <- plotColData(x, vars = "condition")
     expect_s3_class(col_plot$theme$axis.text.y, "element_text")
+    expect_equal(col_plot$theme$axis.text.y$colour, "black")
+    expect_equal(col_plot$theme$axis.text.y$hjust, 0)
+
+    # Row annotations (side = "left"/"right"): the variable-name axis is the
+    # (narrow) `x` axis, so the label is rotated vertical to fit.
     row_plot <- plotRowData(x, vars = "feature_type", side = "right")
     expect_s3_class(row_plot$theme$axis.text.x, "element_text")
+    expect_equal(row_plot$theme$axis.text.x$colour, "black")
+    expect_equal(row_plot$theme$axis.text.x$angle, 90)
 })
 
 test_that("multi-variable annotation results compose safely via wrap_plots(list(...))", {
@@ -67,4 +81,10 @@ test_that("plotHeatmap() keeps multi-variable annotation strips aligned with the
     classes <- vapply(plotHeatmap(x)$patches$plots, function(p) class(p)[[1]], character(1))
     expect_true("patchwork" %in% classes)
     expect_false("wrapped_patch" %in% classes)
+})
+
+test_that("plotHeatmap() packs annotation label text with patchwork::free(type = \"space\")", {
+    x <- make_heatmap()
+    classes <- lapply(plotHeatmap(x)$patches$plots, class)
+    expect_true(any(vapply(classes, function(cl) "free_plot" %in% cl, logical(1))))
 })

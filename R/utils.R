@@ -109,8 +109,13 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
     # `position` (the row/column identifiers) is only labelled when
     # `showNames` is set. `label` (the annotation variable's display name)
     # is always shown as axis text, mirroring how a variable name appears
-    # next to a facet or annotation track in a standard geom_tile() plot.
-    position_text <- if (showNames) ggplot2::element_text() else ggplot2::element_blank()
+    # next to a facet or annotation track in a standard geom_tile() plot,
+    # and matches `plotHeatmapMain()`'s black axis text. Axis text next to
+    # the tiles is justified to hug them rather than float away, using the
+    # ggplot2 convention that `hjust`/`vjust` = 0 anchors text at its near
+    # edge; row annotations (where `label` sits on the rotated x axis) print
+    # the variable name vertically since that axis is narrow.
+    position_text <- if (showNames) ggplot2::element_text(colour = "black") else ggplot2::element_blank()
     if (side %in% c("left", "right")) {
         p <- ggplot2::ggplot(plot_data, ggplot2::aes(y = position, x = label, fill = value)) +
             ggplot2::geom_tile(colour = tileColor) +
@@ -119,13 +124,18 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
                 expand = ggplot2::expansion(add = 0)
             ) +
             ggplot2::scale_y_discrete(expand = ggplot2::expansion(add = 0))
-        axis_text <- list(x = ggplot2::element_text(), y = position_text)
+        label_text <- ggplot2::element_text(
+            colour = "black", angle = 90, vjust = 0.5,
+            hjust = if (side == "right") 0 else 1
+        )
+        axis_text <- list(x = label_text, y = position_text)
     } else {
         p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = position, y = label, fill = value)) +
             ggplot2::geom_tile(colour = tileColor) +
             ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0)) +
             ggplot2::scale_y_discrete(position = "right", expand = ggplot2::expansion(add = 0))
-        axis_text <- list(x = position_text, y = ggplot2::element_text())
+        label_text <- ggplot2::element_text(colour = "black", hjust = 0)
+        axis_text <- list(x = position_text, y = label_text)
     }
     p <- p + ggplot2::labs(x = NULL, y = NULL, fill = label) +
         ggplot2::theme_minimal() +

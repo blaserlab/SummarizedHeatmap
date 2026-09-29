@@ -34,6 +34,10 @@ plotHeatmapMain <- function(x, tileColor = "white", high = "red3",
             ggplot2::theme_minimal() +
             ggplot2::theme(
                 axis.text = ggplot2::element_text(colour = "black"),
+                # The y axis sits on the right (`scale_y_discrete(position =
+                # "right")`); `hjust = 0` anchors row labels at their near
+                # (left) edge so they hug the tiles instead of floating away.
+                axis.text.y = ggplot2::element_text(hjust = 0),
                 panel.grid = ggplot2::element_blank(),
                 panel.border = ggplot2::element_rect(fill = NA, colour = "black"),
                 plot.margin = ggplot2::margin(2, 2, 2, 2)
@@ -48,6 +52,7 @@ plotHeatmapMain <- function(x, tileColor = "white", high = "red3",
             ggplot2::theme_minimal() +
             ggplot2::theme(
                 axis.text = ggplot2::element_text(colour = "black"),
+                axis.text.y = ggplot2::element_text(hjust = 0),
                 panel.grid = ggplot2::element_blank(),
                 panel.border = ggplot2::element_rect(fill = NA, colour = "black"),
                 plot.margin = ggplot2::margin(2, 2, 2, 2)

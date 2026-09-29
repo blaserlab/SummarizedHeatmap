@@ -42,13 +42,17 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     rowAnnotationSide <- match.arg(rowAnnotationSide, c("right", "left", "top", "bottom"))
     spacer <- patchwork::plot_spacer()
     col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else spacer
+    # `free(type = "space")` lets each annotation strip's variable-name axis
+    # text occupy space without reserving room for it in the shared grid, so
+    # annotations with different label lengths still pack tightly against
+    # the heatmap instead of forcing uneven column/row widths.
     col_data <- if (length(colVars) || (is.null(colVars) && ncol(SummarizedExperiment::colData(x)))) {
-        plotColData(x, vars = colVars, side = colAnnotationSide)
+        patchwork::free(plotColData(x, vars = colVars, side = colAnnotationSide), type = "space")
     } else {
         spacer
     }
     row_data <- if (length(rowVars) || (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x)))) {
-        plotRowData(x, vars = rowVars, side = rowAnnotationSide)
+        patchwork::free(plotRowData(x, vars = rowVars, side = rowAnnotationSide), type = "space")
     } else {
         spacer
     }
