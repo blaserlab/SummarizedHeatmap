@@ -6,12 +6,17 @@
 #' annotations, row dendrogram, row annotations, then the main heatmap.
 #' Column annotation plots are stacked vertically. The row dendrogram and row
 #' annotation panels move to whichever side of the heatmap `rowDendroSide`/
-#' `rowAnnotationSide` request (`"left"` or `"right"`); the column dendrogram
-#' and column annotation panels likewise move with `colDendroSide`/
-#' `colAnnotationSide` (`"top"` or `"bottom"`). When a dendrogram and its
-#' matching annotation share a side, the annotation sits adjacent to the
-#' heatmap and the dendrogram sits further out. Pass named variable vectors
-#' to `rowVars` or `colVars` to control annotation strip labels.
+#' `rowAnnotationSide` request (`"left"` or `"right"`, both defaulting to
+#' `"left"`); the column dendrogram and column annotation panels likewise
+#' move with `colDendroSide`/`colAnnotationSide` (`"top"` or `"bottom"`, both
+#' defaulting to `"top"`). When a dendrogram and its matching annotation
+#' share a side, the annotation sits adjacent to the heatmap and the
+#' dendrogram sits further out; by default this puts both on the same side
+#' for each axis. Pass named variable vectors to `rowVars` or `colVars` to
+#' control annotation strip labels; pass `NULL` to `rowAnnotationSide`/
+#' `colAnnotationSide` to omit that annotation panel entirely (it is dropped
+#' from the layout rather than left blank, unlike `showRowDendro`/
+#' `showColDendro`).
 #'
 #' Each annotation strip's variable-name axis text is wrapped with
 #' `patchwork::free(type = "space")` so it packs tightly against the heatmap
@@ -19,10 +24,10 @@
 #' `plotRowData()` for the axis text itself). Because `"space"` reserves no
 #' room for that text, it can get clipped at the edge of the plotting device
 #' if there isn't enough surrounding space to draw it -- most likely with the
-#' non-default `rowAnnotationSide = "left"` or `colAnnotationSide = "bottom"`,
-#' where the (possibly rotated) label competes for space with the heatmap's
-#' own row/column identifier labels. Increase the figure's height or width if
-#' labels are clipped in that configuration.
+#' non-default `rowAnnotationSide = "right"` or `colAnnotationSide =
+#' "bottom"`, where the (possibly rotated) label competes for space with the
+#' heatmap's own row/column identifier labels. Increase the figure's height
+#' or width if labels are clipped in that configuration.
 #'
 #' @param x A SummarizedHeatmap object.
 #' @param rowVars,colVars Optional annotation variables to display. `NULL`
@@ -32,12 +37,12 @@
 #'   row dendrogram panel is placed on (and oriented toward).
 #' @param colDendroSide `"top"` or `"bottom"`: which side of the heatmap the
 #'   column dendrogram panel is placed on (and oriented toward).
-#' @param rowAnnotationSide,colAnnotationSide Placement sides passed to the
-#'   annotation component plotters, restricted to `"left"`/`"right"` (rows)
-#'   or `"top"`/`"bottom"` (columns) so the panel is placed on that side of
-#'   the heatmap. `"left"` (rows) and `"bottom"` (columns) place the
-#'   annotation's variable-name label where it can be clipped if the figure
-#'   is too small; see Details.
+#' @param rowAnnotationSide,colAnnotationSide Which side of the heatmap the
+#'   annotation panel is placed on, restricted to `"left"`/`"right"` (rows)
+#'   or `"top"`/`"bottom"` (columns). `"right"` (rows) and `"bottom"`
+#'   (columns) place the annotation's variable-name label where it can be
+#'   clipped if the figure is too small; see Details. Set to `NULL` to omit
+#'   the annotation panel entirely.
 #' @param collectGuides Collect guides into a shared guide area.
 #' @param guideWidth Relative width of the guide area column, on the same
 #'   scale as the dendrogram/annotation (`1`) and heatmap body (`8`) column
@@ -54,7 +59,7 @@
 plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
                         showRowDendro = TRUE, showColDendro = TRUE,
                         rowDendroSide = "left", colDendroSide = "top",
-                        rowAnnotationSide = "right", colAnnotationSide = "top",
+                        rowAnnotationSide = "left", colAnnotationSide = "top",
                         collectGuides = TRUE, guideWidth = 3, ...) {
     .checkSummarizedHeatmap(x)
     if (!is.numeric(guideWidth) || length(guideWidth) != 1L || is.na(guideWidth) || guideWidth <= 0) {
@@ -63,23 +68,27 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     # Row dendrogram/annotation panels sit beside the heatmap body, so they
     # may only move between its left and right; column dendrogram/annotation
     # panels sit above/below it, so they may only move between top and
-    # bottom (see `.heatmap_design()`).
+    # bottom (see `.heatmap_design()`). `NULL` skips validation for the
+    # annotation sides: it means "omit this annotation panel" rather than
+    # naming a side.
     rowDendroSide <- match.arg(rowDendroSide, c("left", "right"))
-    rowAnnotationSide <- match.arg(rowAnnotationSide, c("left", "right"))
     colDendroSide <- match.arg(colDendroSide, c("top", "bottom"))
-    colAnnotationSide <- match.arg(colAnnotationSide, c("top", "bottom"))
+    if (!is.null(rowAnnotationSide)) rowAnnotationSide <- match.arg(rowAnnotationSide, c("left", "right"))
+    if (!is.null(colAnnotationSide)) colAnnotationSide <- match.arg(colAnnotationSide, c("top", "bottom"))
     spacer <- patchwork::plot_spacer()
     col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else spacer
     # `free(type = "space")` lets each annotation strip's variable-name axis
     # text occupy space without reserving room for it in the shared grid, so
     # annotations with different label lengths still pack tightly against
     # the heatmap instead of forcing uneven column/row widths.
-    col_data <- if (length(colVars) || (is.null(colVars) && ncol(SummarizedExperiment::colData(x)))) {
+    col_data <- if (!is.null(colAnnotationSide) &&
+        (length(colVars) || (is.null(colVars) && ncol(SummarizedExperiment::colData(x))))) {
         patchwork::free(plotColData(x, vars = colVars, side = colAnnotationSide), type = "space")
     } else {
         spacer
     }
-    row_data <- if (length(rowVars) || (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x)))) {
+    row_data <- if (!is.null(rowAnnotationSide) &&
+        (length(rowVars) || (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x))))) {
         patchwork::free(plotRowData(x, vars = rowVars, side = rowAnnotationSide), type = "space")
     } else {
         spacer
@@ -104,23 +113,26 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
 # a side, the annotation sits adjacent to the main panel and the dendrogram
 # sits further out, matching the package's default layout. The guide column
 # ("M") is always last and only occupies the main panel's row.
+# `rowAnnotationSide`/`colAnnotationSide` may be `NULL` (annotation omitted),
+# in which case that component is dropped from the grid instead of
+# reserving a blank slot for it.
 .heatmap_design <- function(rowDendroSide, rowAnnotationSide, colDendroSide, colAnnotationSide, guideWidth) {
     row_left <- c(
         if (rowDendroSide == "left") "dendro",
-        if (rowAnnotationSide == "left") "annotation"
+        if (identical(rowAnnotationSide, "left")) "annotation"
     )
     row_right <- c(
-        if (rowAnnotationSide == "right") "annotation",
+        if (identical(rowAnnotationSide, "right")) "annotation",
         if (rowDendroSide == "right") "dendro"
     )
     horiz_order <- c(row_left, "main", row_right)
 
     col_top <- c(
         if (colDendroSide == "top") "dendro",
-        if (colAnnotationSide == "top") "annotation"
+        if (identical(colAnnotationSide, "top")) "annotation"
     )
     col_bottom <- c(
-        if (colAnnotationSide == "bottom") "annotation",
+        if (identical(colAnnotationSide, "bottom")) "annotation",
         if (colDendroSide == "bottom") "dendro"
     )
     vert_order <- c(col_top, "main", col_bottom)

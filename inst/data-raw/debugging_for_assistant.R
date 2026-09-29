@@ -17,7 +17,11 @@ make_test_hm <- function() {
 }
 hm <- make_test_hm()
 
-plotHeatmap(hm, rowDendroSide = "right")# not working:  flips row dendrogram instead of moving it
-plotHeatmap(hm, rowAnnotationSide = "right")# not working: doesn't appear to do anything
-plotHeatmap(hm, colDendroSide = "right")# should err:  colDendro should never be on the right or left
-plotHeatmap(hm, colDendroSide = "bottom")# not working, similar to row dendro arg
+plotHeatmap(hm)# not working, by default the annotations should be on the left
+plotHeatmap(hm, rowDendroSide = "right")# works, though the underlying issue with the rowAnnotation is still there
+plotHeatmap(hm, rowAnnotationSide = "right")# works
+plotHeatmap(hm, colDendroSide = "right")# errs appropriately
+plotHeatmap(hm, colDendroSide = "bottom")#
+plotHeatmap(hm, colAnnotationSide = "bottom")#
+plotHeatmap(hm, colAnnotationSide = NULL)# should delete the column annotation
+plotHeatmap(hm, rowAnnotationSide = NULL)# somehow this puts the row annotation on the left and moves the axis text to the bottom

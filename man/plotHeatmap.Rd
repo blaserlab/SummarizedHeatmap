@@ -12,7 +12,7 @@ plotHeatmap(
   showColDendro = TRUE,
   rowDendroSide = "left",
   colDendroSide = "top",
-  rowAnnotationSide = "right",
+  rowAnnotationSide = "left",
   colAnnotationSide = "top",
   collectGuides = TRUE,
   guideWidth = 3,
@@ -33,12 +33,12 @@ row dendrogram panel is placed on (and oriented toward).}
 \item{colDendroSide}{\code{"top"} or \code{"bottom"}: which side of the heatmap the
 column dendrogram panel is placed on (and oriented toward).}
 
-\item{rowAnnotationSide, colAnnotationSide}{Placement sides passed to the
-annotation component plotters, restricted to \code{"left"}/\code{"right"} (rows)
-or \code{"top"}/\code{"bottom"} (columns) so the panel is placed on that side of
-the heatmap. \code{"left"} (rows) and \code{"bottom"} (columns) place the
-annotation's variable-name label where it can be clipped if the figure
-is too small; see Details.}
+\item{rowAnnotationSide, colAnnotationSide}{Which side of the heatmap the
+annotation panel is placed on, restricted to \code{"left"}/\code{"right"} (rows)
+or \code{"top"}/\code{"bottom"} (columns). \code{"right"} (rows) and \code{"bottom"}
+(columns) place the annotation's variable-name label where it can be
+clipped if the figure is too small; see Details. Set to \code{NULL} to omit
+the annotation panel entirely.}
 
 \item{collectGuides}{Collect guides into a shared guide area.}
 
@@ -60,12 +60,17 @@ collects guides in grid traversal order: column dendrogram, column
 annotations, row dendrogram, row annotations, then the main heatmap.
 Column annotation plots are stacked vertically. The row dendrogram and row
 annotation panels move to whichever side of the heatmap \code{rowDendroSide}/
-\code{rowAnnotationSide} request (\code{"left"} or \code{"right"}); the column dendrogram
-and column annotation panels likewise move with \code{colDendroSide}/
-\code{colAnnotationSide} (\code{"top"} or \code{"bottom"}). When a dendrogram and its
-matching annotation share a side, the annotation sits adjacent to the
-heatmap and the dendrogram sits further out. Pass named variable vectors
-to \code{rowVars} or \code{colVars} to control annotation strip labels.
+\code{rowAnnotationSide} request (\code{"left"} or \code{"right"}, both defaulting to
+\code{"left"}); the column dendrogram and column annotation panels likewise
+move with \code{colDendroSide}/\code{colAnnotationSide} (\code{"top"} or \code{"bottom"}, both
+defaulting to \code{"top"}). When a dendrogram and its matching annotation
+share a side, the annotation sits adjacent to the heatmap and the
+dendrogram sits further out; by default this puts both on the same side
+for each axis. Pass named variable vectors to \code{rowVars} or \code{colVars} to
+control annotation strip labels; pass \code{NULL} to \code{rowAnnotationSide}/
+\code{colAnnotationSide} to omit that annotation panel entirely (it is dropped
+from the layout rather than left blank, unlike \code{showRowDendro}/
+\code{showColDendro}).
 }
 \details{
 Each annotation strip's variable-name axis text is wrapped with
@@ -74,10 +79,9 @@ instead of forcing extra column/row width (see \code{plotColData()}/
 \code{plotRowData()} for the axis text itself). Because \code{"space"} reserves no
 room for that text, it can get clipped at the edge of the plotting device
 if there isn't enough surrounding space to draw it -- most likely with the
-non-default \code{rowAnnotationSide = "left"} or \code{colAnnotationSide = "bottom"},
-where the (possibly rotated) label competes for space with the heatmap's
-own row/column identifier labels. Increase the figure's height or width if
-labels are clipped in that configuration.
+non-default \code{rowAnnotationSide = "right"} or \code{colAnnotationSide = "bottom"}, where the (possibly rotated) label competes for space with the
+heatmap's own row/column identifier labels. Increase the figure's height
+or width if labels are clipped in that configuration.
 }
 \examples{
 mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
