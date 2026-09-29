@@ -197,6 +197,43 @@ qc <- ggplot2::ggplot(
 (qc / main) + patchwork::plot_layout(heights = c(1, 5))
 ```
 
+Component functions also compose directly with `wrap_plots()`'s named-argument
+form, letting a custom `design` string place each panel (and
+`guide_area()`) anywhere in the grid -- including a guide column that spans
+the full plot height rather than only the main panel's row, as
+`plotHeatmap()` itself now does. `palette` on `plotColData()`/`plotRowData()`
+maps annotation levels to specific colours (via `scale_fill_manual()`); call
+each variable separately when different variables need different palettes,
+since a single call's `palette` applies to every variable it plots.
+
+```{r custom-grid}
+row_palette <- c(marker = "#8DA0CB", background = "#E5C494")
+col_palette <- c(control = "#66C2A5", treated = "#FC8D62")
+
+pColDendro <- plotColDendro(hm)
+pColData <- plotColData(hm, vars = "condition", palette = col_palette)
+pRowDendro <- plotRowDendro(hm)
+pRowData <- patchwork::free(
+    plotRowData(hm, vars = "feature_class", side = "left", palette = row_palette),
+    type = "space"
+)
+pMain <- plotHeatmapMain(hm)
+
+design <- "
+##AG
+##BG
+CDEG
+"
+patchwork::wrap_plots(
+    A = pColDendro, B = pColData, C = pRowDendro, D = pRowData, E = pMain,
+    G = patchwork::guide_area(),
+    design = design,
+    heights = c(1, 1, 8),
+    widths = c(1, 1, 8, 2),
+    guides = "collect"
+)
+```
+
 # Subsetting and reclustering
 
 Subsetting follows SummarizedExperiment semantics. If selected rows differ in

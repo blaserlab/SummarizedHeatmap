@@ -126,7 +126,9 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
 # column annotation "B") are ordered top-to-bottom. When two components share
 # a side, the annotation sits adjacent to the main panel and the dendrogram
 # sits further out, matching the package's default layout. The guide column
-# ("M") is always last and only occupies the main panel's row.
+# ("M") is always last and spans the full height of the grid, so stacked
+# legends have the whole plot height to lay out in rather than being
+# squeezed into the main panel's row alone.
 # Any of the four side arguments may be `NULL`, meaning that component's
 # panel is omitted entirely: it is dropped from the grid instead of
 # reserving a blank slot for it. `identical()` (rather than `==`) is used
@@ -165,7 +167,7 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
             else if (hk == "main") col_letters[[vk]]
             else "#"
         }, character(1))
-        paste0(paste(cells, collapse = ""), if (vk == "main") "M" else "#")
+        paste0(paste(cells, collapse = ""), "M")
     }, character(1))
 
     list(
