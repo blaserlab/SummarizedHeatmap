@@ -133,7 +133,7 @@ so the annotations sit beside the heatmap body. The row dendrogram's leaves
 face the heatmap. The component functions remain available when a custom layout
 is preferred.
 
-```{r complete}
+```{r complete, height = 9}
 complete <- plotHeatmap(hm)
 complete
 ```
@@ -178,7 +178,7 @@ custom
 ```
 
 Arbitrary ggplots can be combined with heatmap components using the same
-patchwork operations. Here a small sample-level summary plot sits beside the
+patchwork operations. Here a small sample-level summary plot sits above the
 heatmap.
 
 ```{r extra-plot}

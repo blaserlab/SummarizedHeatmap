@@ -17,13 +17,32 @@ make_test_hm <- function() {
 }
 hm <- make_test_hm()
 
-plotHeatmap(hm)# close:  the axis title should be on the top instead of teh bottom for maximum compactness
-plotHeatmap(hm, rowDendroSide = "right")# works
-plotHeatmap(hm, rowAnnotationSide = "right")# works
-plotHeatmap(hm, colDendroSide = "right")# errs appropriately
-plotHeatmap(hm, colDendroSide = "bottom")# works
-plotHeatmap(hm, colAnnotationSide = "bottom")# works
-plotHeatmap(hm, colAnnotationSide = "bottom", colDendroSide = "bottom")# works
-plotHeatmap(hm, colAnnotationSide = NULL)# the grid is off:  annotations are much too big relative to thhe main body
-plotHeatmap(hm, rowAnnotationSide = NULL)# the grid is off:  there is a big gap between the dendrogram and the main body
-plotHeatmap(hm, showRowDendro = FALSE)# should drop the reserved grid slot
+plotHeatmap(hm)# expand guide area to the full height of the plot
+
+plot_hm <- function() {
+
+  design <-
+    "
+  ##AG
+  ##BG
+  CDEG
+  "
+  pColDendro <- plotColDendro(hm)
+  pColData <- plotColData(hm)
+  pRowDendro <- plotRowDendro(hm)
+  pRowData <- free(plotRowData(hm, side = "left"), type = "space")
+  pMain <- plotHeatmapMain(hm)
+
+  wrap_plots(A = pColDendro,
+             B = pColData,
+             C = pRowDendro,
+             D = pRowData,
+             E = pMain,
+             G = guide_area(),
+             design = design,
+             heights = c(1, 1, 8),
+             widths = c(1, 1, 8, 2),
+             guides = "collect"
+             )
+}
+plot_hm()# add another block to the vignette demonstrating more of the versatility of the approach used here.  In addition to the plot_hm function, take advantage of the palette parameters available in the annotation data plotters.
