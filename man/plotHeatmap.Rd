@@ -27,13 +27,18 @@ includes all available variables.}
 
 \item{showRowDendro, showColDendro}{Whether to display stored dendrograms.}
 
-\item{rowDendroSide, colDendroSide}{Orientation sides passed to the
-dendrogram component plotters.}
+\item{rowDendroSide}{\code{"left"} or \code{"right"}: which side of the heatmap the
+row dendrogram panel is placed on (and oriented toward).}
+
+\item{colDendroSide}{\code{"top"} or \code{"bottom"}: which side of the heatmap the
+column dendrogram panel is placed on (and oriented toward).}
 
 \item{rowAnnotationSide, colAnnotationSide}{Placement sides passed to the
-annotation component plotters. \code{"left"} (rows) and \code{"bottom"} (columns)
-place the annotation's variable-name label where it can be clipped if
-the figure is too small; see Details.}
+annotation component plotters, restricted to \code{"left"}/\code{"right"} (rows)
+or \code{"top"}/\code{"bottom"} (columns) so the panel is placed on that side of
+the heatmap. \code{"left"} (rows) and \code{"bottom"} (columns) place the
+annotation's variable-name label where it can be clipped if the figure
+is too small; see Details.}
 
 \item{collectGuides}{Collect guides into a shared guide area.}
 
@@ -50,12 +55,17 @@ A patchwork object.
 }
 \description{
 The component plots remain available through their individual plotting
-functions. This helper arranges them in a fixed layout and collects guides
-in grid traversal order: column dendrogram, column annotations, row
-dendrogram, row annotations, then the main heatmap. Column annotation plots
-are stacked vertically; the row dendrogram and row annotations sit to the
-left of the heatmap in that order. Pass named variable
-vectors to \code{rowVars} or \code{colVars} to control annotation strip labels.
+functions. This helper arranges them around the main heatmap panel and
+collects guides in grid traversal order: column dendrogram, column
+annotations, row dendrogram, row annotations, then the main heatmap.
+Column annotation plots are stacked vertically. The row dendrogram and row
+annotation panels move to whichever side of the heatmap \code{rowDendroSide}/
+\code{rowAnnotationSide} request (\code{"left"} or \code{"right"}); the column dendrogram
+and column annotation panels likewise move with \code{colDendroSide}/
+\code{colAnnotationSide} (\code{"top"} or \code{"bottom"}). When a dendrogram and its
+matching annotation share a side, the annotation sits adjacent to the
+heatmap and the dendrogram sits further out. Pass named variable vectors
+to \code{rowVars} or \code{colVars} to control annotation strip labels.
 }
 \details{
 Each annotation strip's variable-name axis text is wrapped with

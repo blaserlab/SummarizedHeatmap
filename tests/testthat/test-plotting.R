@@ -88,3 +88,68 @@ test_that("plotHeatmap() packs annotation label text with patchwork::free(type =
     classes <- lapply(plotHeatmap(x)$patches$plots, class)
     expect_true(any(vapply(classes, function(cl) "free_plot" %in% cl, logical(1))))
 })
+
+# `plotHeatmap()`'s panels are always composed in a fixed A-F order (column
+# dendrogram, column annotation, row dendrogram, row annotation, main,
+# guide); this helper reads a panel's grid position back out regardless of
+# where `*Side` arguments have placed it.
+panel_rect <- function(p, letter) {
+    idx <- match(letter, c("A", "B", "C", "D", "E", "M"))
+    design <- p$patches$layout$design
+    list(t = design$t[idx], l = design$l[idx], b = design$b[idx], r = design$r[idx])
+}
+
+test_that("plotHeatmap()'s *Side arguments move panels, not just orient them", {
+    x <- make_heatmap()
+
+    # Defaults: row dendrogram left of the heatmap, row annotation right of
+    # it; column dendrogram above the column annotation, both above the
+    # heatmap.
+    p <- plotHeatmap(x)
+    main <- panel_rect(p, "E")
+    expect_lt(panel_rect(p, "C")$l, main$l)
+    expect_gt(panel_rect(p, "D")$l, main$l)
+    expect_lt(panel_rect(p, "A")$t, panel_rect(p, "B")$t)
+    expect_lt(panel_rect(p, "B")$t, main$t)
+
+    # rowDendroSide = "right" moves the row dendrogram panel to the right of
+    # the heatmap (previously it only mirrored the dendrogram's orientation
+    # while leaving the panel on the left).
+    p_dendro_right <- plotHeatmap(x, rowDendroSide = "right")
+    main_dr <- panel_rect(p_dendro_right, "E")
+    expect_gt(panel_rect(p_dendro_right, "C")$l, main_dr$l)
+    # With both the dendrogram and (default) annotation on the right, the
+    # annotation stays adjacent to the heatmap and the dendrogram sits
+    # further out.
+    expect_lt(panel_rect(p_dendro_right, "D")$l, panel_rect(p_dendro_right, "C")$l)
+
+    # rowAnnotationSide = "left" moves the row annotation panel to the left
+    # of the heatmap (previously changing this argument had no visible
+    # effect on the composed layout).
+    p_ann_left <- plotHeatmap(x, rowAnnotationSide = "left")
+    main_al <- panel_rect(p_ann_left, "E")
+    expect_lt(panel_rect(p_ann_left, "D")$l, main_al$l)
+    expect_lt(panel_rect(p_ann_left, "C")$l, panel_rect(p_ann_left, "D")$l)
+
+    # colDendroSide = "bottom" moves the column dendrogram panel below the
+    # heatmap.
+    p_col_bottom <- plotHeatmap(x, colDendroSide = "bottom")
+    main_cb <- panel_rect(p_col_bottom, "E")
+    expect_gt(panel_rect(p_col_bottom, "A")$t, main_cb$t)
+})
+
+test_that("plotHeatmap() rejects sides that don't apply to a panel's axis", {
+    x <- make_heatmap()
+    # A column dendrogram/annotation spans columns, so it can only be placed
+    # above or below the heatmap, never to its left or right.
+    expect_error(plotHeatmap(x, colDendroSide = "right"), "'arg' should be one of")
+    expect_error(plotHeatmap(x, colDendroSide = "left"), "'arg' should be one of")
+    expect_error(plotHeatmap(x, colAnnotationSide = "right"), "'arg' should be one of")
+    expect_error(plotHeatmap(x, colAnnotationSide = "left"), "'arg' should be one of")
+    # A row dendrogram/annotation spans rows, so it can only be placed left
+    # or right of the heatmap, never above or below.
+    expect_error(plotHeatmap(x, rowDendroSide = "top"), "'arg' should be one of")
+    expect_error(plotHeatmap(x, rowDendroSide = "bottom"), "'arg' should be one of")
+    expect_error(plotHeatmap(x, rowAnnotationSide = "top"), "'arg' should be one of")
+    expect_error(plotHeatmap(x, rowAnnotationSide = "bottom"), "'arg' should be one of")
+})
