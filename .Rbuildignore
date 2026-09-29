@@ -11,3 +11,4 @@
 ^\.agents$
 ^\.codex$
 ^tests/testthat/Rplots\.pdf$
+^data-raw/*
