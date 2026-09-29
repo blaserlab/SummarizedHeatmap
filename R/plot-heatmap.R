@@ -42,21 +42,13 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     rowAnnotationSide <- match.arg(rowAnnotationSide, c("right", "left", "top", "bottom"))
     spacer <- patchwork::plot_spacer()
     col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else spacer
-    # Build annotation strips with `.annotation_plots(..., wrap = FALSE)`
-    # rather than the exported `plotColData()`/`plotRowData()`. Those wrap
-    # multi-variable results with `wrap_elements()` so they compose safely
-    # with patchwork operators, but a wrapped composite can no longer be
-    # aligned to the axis positions of sibling panels. Composing the raw,
-    # unwrapped composite through this function's list + `design` layout is
-    # already safe from the same flattening operators would cause, so the
-    # unwrapped form keeps annotation strips pixel-aligned with the heatmap.
     col_data <- if (length(colVars) || (is.null(colVars) && ncol(SummarizedExperiment::colData(x)))) {
-        .annotation_plots(x, 2L, colVars, colAnnotationSide, tileColor = "white", palette = NULL, showNames = FALSE, wrap = FALSE)
+        plotColData(x, vars = colVars, side = colAnnotationSide)
     } else {
         spacer
     }
     row_data <- if (length(rowVars) || (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x)))) {
-        .annotation_plots(x, 1L, rowVars, rowAnnotationSide, tileColor = "white", palette = NULL, showNames = FALSE, wrap = FALSE)
+        plotRowData(x, vars = rowVars, side = rowAnnotationSide)
     } else {
         spacer
     }

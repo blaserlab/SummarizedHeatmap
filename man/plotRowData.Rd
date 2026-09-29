@@ -28,17 +28,24 @@ names as displayed labels.}
 \item{showNames}{Whether to display row or column names on the annotation axis.}
 }
 \value{
-A ggplot for one variable, a single wrapped patch (see Details) for
-multiple variables, or a spacer when no row annotations are present.
+A ggplot for one variable, a patchwork for multiple variables, or a
+spacer when no row annotations are present.
 }
 \description{
-Each selected row annotation is represented by an independent ggplot. A
-single variable returns a ggplot; multiple variables are stacked into one
-patchwork and returned as a single self-contained patch (via
-\code{patchwork::wrap_elements()}). Fixing the internal panels this way keeps
-the result safe to combine with other plots using patchwork operators
-(\code{+}, \code{/}, \code{|}) or \code{patchwork::wrap_plots()} without its individual
-variable panels leaking into the surrounding layout.
+Each selected row annotation is represented by an independent ggplot,
+labelled with its variable name as axis text next to the annotation tiles
+(in addition to its legend title). A single variable returns a ggplot;
+multiple variables return an (unwrapped) patchwork stacking the
+independent plots, so the result stays aligned with sibling panels and
+its guides can still be collected by an enclosing \code{plot_layout(guides = "collect")} -- see \code{plotHeatmap()}.
+}
+\details{
+Combining a multiple-variable result directly with another plot using
+patchwork operators (\code{+}, \code{/}, \code{|}) can silently flatten its panel list
+into the parent's, which may break a \code{plot_layout(heights = ...)}/\code{ plot_layout(design = ...)} built around an expected panel count. Use
+\code{patchwork::wrap_plots(list(annotation, otherPlot), ...)} instead of an
+operator to combine them safely (this is how \code{plotHeatmap()} does it
+internally).
 }
 \examples{
 mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))

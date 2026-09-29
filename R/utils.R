@@ -43,7 +43,7 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
     list(dendrogram = dendrogram, order = as.integer(order.dendrogram(dendrogram)))
 }
 
-.annotation_plots <- function(x, margin, vars, side, tileColor, palette, showNames, wrap = TRUE) {
+.annotation_plots <- function(x, margin, vars, side, tileColor, palette, showNames) {
     metadata <- if (margin == 1L) SummarizedExperiment::rowData(x) else SummarizedExperiment::colData(x)
     data <- as.data.frame(metadata)
     ids <- .axis_ids(x, margin)
@@ -79,25 +79,21 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
     if (length(plots) == 1L) {
         return(plots[[1L]])
     }
-    composite <- if (margin == 2L && side %in% c("top", "bottom")) {
+    # Returned as a raw (unwrapped) patchwork rather than a
+    # `patchwork::wrap_elements()`-fixed patch: wrapping would keep it safe
+    # from flattening when combined with `+`/`/`/`|`, but it also blocks
+    # patchwork's panel alignment and guide-collection machinery, breaking
+    # `plotHeatmap()`'s aligned annotation strips and shared guide area. To
+    # combine this result with another plot without risking that operators
+    # silently flatten its panel list into the parent's (which can break
+    # `plot_layout(heights = ...)` or misplace panels under
+    # `plot_layout(design = ...)`), use `patchwork::wrap_plots(list(...))`
+    # instead of the operators; see `plotColData()`/`plotRowData()`.
+    if (margin == 2L && side %in% c("top", "bottom")) {
         patchwork::wrap_plots(plots, ncol = 1L, guides = "auto")
     } else {
         patchwork::wrap_plots(plots, guides = "auto")
     }
-    if (!wrap) {
-        return(composite)
-    }
-    # `wrap_elements()` fixes the composite's internal panels into a single
-    # opaque patch. Without it, combining the multi-variable result with
-    # another plot via patchwork operators (`+`, `/`, `|`) would silently
-    # flatten its plot list into the parent's, changing the effective panel
-    # count and breaking layouts built with `plot_layout(heights = ...)` or
-    # `plot_layout(design = ...)`. The trade-off is that a wrapped composite
-    # can no longer be aligned to sibling panels' actual axis positions, so
-    # `plotHeatmap()` calls `.annotation_plots()` directly with `wrap = FALSE`
-    # to keep its column/row annotation strips pixel-aligned with the main
-    # heatmap panel.
-    patchwork::wrap_elements(panel = composite)
 }
 
 .annotation_plot <- function(value, axis_ids, label, side, tileColor, palette, showNames) {
@@ -110,6 +106,11 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
         label = label,
         stringsAsFactors = FALSE
     )
+    # `position` (the row/column identifiers) is only labelled when
+    # `showNames` is set. `label` (the annotation variable's display name)
+    # is always shown as axis text, mirroring how a variable name appears
+    # next to a facet or annotation track in a standard geom_tile() plot.
+    position_text <- if (showNames) ggplot2::element_text() else ggplot2::element_blank()
     if (side %in% c("left", "right")) {
         p <- ggplot2::ggplot(plot_data, ggplot2::aes(y = position, x = label, fill = value)) +
             ggplot2::geom_tile(colour = tileColor) +
@@ -118,18 +119,20 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
                 expand = ggplot2::expansion(add = 0)
             ) +
             ggplot2::scale_y_discrete(expand = ggplot2::expansion(add = 0))
+        axis_text <- list(x = ggplot2::element_text(), y = position_text)
     } else {
         p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = position, y = label, fill = value)) +
             ggplot2::geom_tile(colour = tileColor) +
             ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0)) +
             ggplot2::scale_y_discrete(position = "right", expand = ggplot2::expansion(add = 0))
+        axis_text <- list(x = position_text, y = ggplot2::element_text())
     }
     p <- p + ggplot2::labs(x = NULL, y = NULL, fill = label) +
         ggplot2::theme_minimal() +
         ggplot2::theme(
             axis.title = ggplot2::element_blank(),
-            axis.text.x = if (showNames) ggplot2::element_text() else ggplot2::element_blank(),
-            axis.text.y = if (showNames) ggplot2::element_text() else ggplot2::element_blank(),
+            axis.text.x = axis_text$x,
+            axis.text.y = axis_text$y,
             panel.grid = ggplot2::element_blank(),
             panel.border = ggplot2::element_rect(fill = NA, colour = "black", linewidth = 0.25),
             plot.margin = ggplot2::margin(2, 2, 2, 2)

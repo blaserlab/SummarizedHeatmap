@@ -109,10 +109,9 @@ modified through the inherited SummarizedExperiment accessors.
 # Plot components
 
 `plotHeatmapMain()` returns a regular ggplot. Annotation functions create one
-ggplot per variable; selecting multiple variables returns a single
-self-contained patch stacking the independent plots, so the result composes
-safely with patchwork operators without its individual variable panels
-leaking into a surrounding layout. Dendrogram functions also return ggplots.
+ggplot per variable, labelled with its variable name as axis text next to the
+tiles; selecting multiple variables returns a patchwork stacking the
+independent plots. Dendrogram functions also return ggplots.
 
 ```{r components}
 main <- plotHeatmapMain(hm) +
@@ -156,9 +155,19 @@ stacked <- patchwork::wrap_plots(
 stacked
 ```
 
+`column_annotation` is itself a two-panel patchwork (one panel per selected
+variable), so combining it directly with `main` using an operator like `/`
+would flatten both objects' panel lists together, leaving three panels where
+`heights = c(1, 5)` only accounts for two. Use `wrap_plots()` with a list
+instead: each list element is kept as one area regardless of how many panels
+it contains internally, so the annotation strip stays aligned with the
+heatmap and its guides are still collected normally.
+
 ```{r free-layout}
-custom <- (column_annotation / main) +
-    patchwork::plot_layout(heights = c(1, 5), guides = "collect")
+custom <- patchwork::wrap_plots(
+    list(column_annotation, main),
+    ncol = 1, heights = c(1, 5), guides = "collect"
+)
 custom
 ```
 

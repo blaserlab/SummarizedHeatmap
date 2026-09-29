@@ -10,4 +10,5 @@
 - Explain the existing code behavior before changing it.
 - For R changes, run the relevant checks and report what you ran.
 - Summarize changed files.
-- Use a coding style similar to the documents you find in the R directory where possible.  If necessary, this should be superceded by Bioconductor coding style.  
+- Use a coding style similar to the documents you find in the R directory where possible.  If necessary, this should be superceded by Bioconductor coding style.
+- Propose a concise commit message for changes since the last commit

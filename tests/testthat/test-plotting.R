@@ -6,22 +6,34 @@ test_that("component plots have the documented classes", {
     expect_s3_class(plotColDendro(x), "ggplot")
     expect_s3_class(plotRowData(x, vars = "feature_type"), "ggplot")
     expect_s3_class(plotColData(x, vars = "condition"), "ggplot")
-    expect_s3_class(plotRowData(x, vars = c("Feature" = "feature_type", "Again" = "feature_type2")), "patch")
-    expect_s3_class(plotColData(x, vars = c("Condition" = "condition", "Batch" = "batch")), "patch")
+    expect_s3_class(plotRowData(x, vars = c("Feature" = "feature_type", "Again" = "feature_type2")), "patchwork")
+    expect_s3_class(plotColData(x, vars = c("Condition" = "condition", "Batch" = "batch")), "patchwork")
     expect_s3_class(plotRowDendro(x)$coordinates, "CoordFlip")
     expect_s3_class(plotHeatmap(x), "patchwork")
 })
 
-test_that("multi-variable annotation plots compose safely with patchwork operators", {
-    # `plotColData()`/`plotRowData()` wrap multi-variable results with
-    # `wrap_elements()` so their internal panels stay fixed and don't get
-    # flattened into a parent layout built with patchwork operators.
+test_that("annotation tiles always label their variable as axis text", {
+    x <- make_heatmap()
+    col_plot <- plotColData(x, vars = "condition")
+    expect_s3_class(col_plot$theme$axis.text.y, "element_text")
+    row_plot <- plotRowData(x, vars = "feature_type", side = "right")
+    expect_s3_class(row_plot$theme$axis.text.x, "element_text")
+})
+
+test_that("multi-variable annotation results compose safely via wrap_plots(list(...))", {
+    # Combining a multi-variable annotation patchwork directly with another
+    # plot via `/`/`+`/`|` can flatten both objects' panel lists together
+    # (see `.annotation_plots()`). `wrap_plots(list(...))` keeps each list
+    # element as a single area instead, which is the pattern this test (and
+    # `plotHeatmap()`) relies on.
     x <- make_heatmap()
     SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
     col_ann <- plotColData(x, vars = c("condition", "batch"))
     main <- plotHeatmapMain(x)
-    combined <- (col_ann / main) +
-        patchwork::plot_layout(heights = c(1, 5), guides = "collect")
+    combined <- patchwork::wrap_plots(
+        list(col_ann, main),
+        ncol = 1, heights = c(1, 5), guides = "collect"
+    )
     expect_s3_class(combined, "patchwork")
     expect_equal(length(combined$patches$plots) + 1L, 2L)
 })
@@ -45,11 +57,11 @@ test_that("plotHeatmap()'s guideWidth controls the guide column width", {
     expect_error(plotHeatmap(x, rowAnnotationSide = "nowhere"), "'arg' should be one of")
 })
 
-test_that("plotHeatmap() keeps multi-variable annotation strips unwrapped for alignment", {
-    # Unlike `plotColData()`/`plotRowData()`, which wrap multi-variable
-    # results with `wrap_elements()` for safe composition, `plotHeatmap()`
-    # must use the raw composite so patchwork can align its panels with the
-    # main heatmap's actual axis positions (see `.annotation_plots()`).
+test_that("plotHeatmap() keeps multi-variable annotation strips aligned with the heatmap", {
+    # Annotation results stay unwrapped (see `.annotation_plots()`), so
+    # `plotHeatmap()`'s list + `design` composition keeps its panels
+    # aligned with the main heatmap's axis positions and its guides
+    # collectible into the shared guide area.
     x <- make_heatmap()
     SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
     classes <- vapply(plotHeatmap(x)$patches$plots, function(p) class(p)[[1]], character(1))
