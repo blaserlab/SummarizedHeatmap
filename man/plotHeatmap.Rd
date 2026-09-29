@@ -68,9 +68,11 @@ share a side, the annotation sits adjacent to the heatmap and the
 dendrogram sits further out; by default this puts both on the same side
 for each axis. Pass named variable vectors to \code{rowVars} or \code{colVars} to
 control annotation strip labels; pass \code{NULL} to \code{rowAnnotationSide}/
-\code{colAnnotationSide} to omit that annotation panel entirely (it is dropped
-from the layout rather than left blank, unlike \code{showRowDendro}/
-\code{showColDendro}).
+\code{colAnnotationSide} to omit that annotation panel entirely. Any omitted
+panel -- an annotation set to \code{NULL}, a dendrogram hidden with
+\code{showRowDendro}/\code{showColDendro = FALSE}, or a dendrogram that was never
+stored -- is dropped from the grid rather than left as a blank but
+still-sized slot, so the remaining panels use the reclaimed space.
 }
 \details{
 Each annotation strip's variable-name axis text is wrapped with

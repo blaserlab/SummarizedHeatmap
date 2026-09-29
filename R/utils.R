@@ -123,13 +123,22 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
         p <- ggplot2::ggplot(plot_data, ggplot2::aes(y = position, x = label, fill = value)) +
             ggplot2::geom_tile(colour = tileColor) +
             ggplot2::scale_x_discrete(
-                position = if (side == "left") "bottom" else "top",
+                # In `plotHeatmap()`'s composite grid, a row-axis panel's top
+                # neighbour is always blank (column/row-annotation panels
+                # only occupy the main column, not the row-dendrogram/
+                # row-annotation columns), regardless of whether the panel
+                # sits to the "left" or "right" of the heatmap. Anchoring the
+                # label at "top" therefore keeps it compact for both sides;
+                # "right" places it at "bottom" instead, where it is more
+                # likely to compete with the heatmap's own column identifier
+                # labels for space (see `plotRowData()`'s docs).
+                position = if (side == "left") "top" else "bottom",
                 expand = ggplot2::expansion(add = 0)
             ) +
             ggplot2::scale_y_discrete(expand = ggplot2::expansion(add = 0))
         label_text <- ggplot2::element_text(
             colour = "black", angle = 90, vjust = 0.5,
-            hjust = if (side == "right") 0 else 1
+            hjust = if (side == "left") 0 else 1
         )
         axis_text <- list(x = label_text, y = position_text)
     } else {

@@ -22,7 +22,7 @@
 #' width (`plotHeatmap()` does this for every annotation strip). Because
 #' `"space"` reserves no room for that text, it can get clipped at the edge
 #' of the plotting device when there isn't enough surrounding space -- most
-#' likely with `side = "left"` or `side = "bottom"`, where the (possibly
+#' likely with `side = "right"` or `side = "bottom"`, where the (possibly
 #' rotated) label competes for space with other axis labels. Increase the
 #' figure's height or width if labels are clipped in that configuration.
 #'
@@ -32,7 +32,7 @@
 #' @param side Which side of the annotation tiles the variable-name label sits
 #'   on: `"right"` or `"left"` for row annotations (the tiles are always laid
 #'   out with row identifiers on the vertical axis, matching the heatmap's
-#'   rows). `"left"` places the label where it is more prone to clipping when
+#'   rows). `"right"` places the label where it is more prone to clipping when
 #'   combined with `patchwork::free(type = "space")`; see Details.
 #' @param tileColor Tile border colour.
 #' @param palette Optional named values passed to `scale_fill_manual()`.

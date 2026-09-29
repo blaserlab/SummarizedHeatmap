@@ -17,11 +17,13 @@ make_test_hm <- function() {
 }
 hm <- make_test_hm()
 
-plotHeatmap(hm)# not working, by default the annotations should be on the left
-plotHeatmap(hm, rowDendroSide = "right")# works, though the underlying issue with the rowAnnotation is still there
+plotHeatmap(hm)# close:  the axis title should be on the top instead of teh bottom for maximum compactness
+plotHeatmap(hm, rowDendroSide = "right")# works
 plotHeatmap(hm, rowAnnotationSide = "right")# works
 plotHeatmap(hm, colDendroSide = "right")# errs appropriately
-plotHeatmap(hm, colDendroSide = "bottom")#
-plotHeatmap(hm, colAnnotationSide = "bottom")#
-plotHeatmap(hm, colAnnotationSide = NULL)# should delete the column annotation
-plotHeatmap(hm, rowAnnotationSide = NULL)# somehow this puts the row annotation on the left and moves the axis text to the bottom
+plotHeatmap(hm, colDendroSide = "bottom")# works
+plotHeatmap(hm, colAnnotationSide = "bottom")# works
+plotHeatmap(hm, colAnnotationSide = "bottom", colDendroSide = "bottom")# works
+plotHeatmap(hm, colAnnotationSide = NULL)# the grid is off:  annotations are much too big relative to thhe main body
+plotHeatmap(hm, rowAnnotationSide = NULL)# the grid is off:  there is a big gap between the dendrogram and the main body
+plotHeatmap(hm, showRowDendro = FALSE)# should drop the reserved grid slot

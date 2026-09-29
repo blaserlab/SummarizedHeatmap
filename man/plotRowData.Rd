@@ -22,7 +22,7 @@ names as displayed labels.}
 \item{side}{Which side of the annotation tiles the variable-name label sits
 on: \code{"right"} or \code{"left"} for row annotations (the tiles are always laid
 out with row identifiers on the vertical axis, matching the heatmap's
-rows). \code{"left"} places the label where it is more prone to clipping when
+rows). \code{"right"} places the label where it is more prone to clipping when
 combined with \code{patchwork::free(type = "space")}; see Details.}
 
 \item{tileColor}{Tile border colour.}
@@ -57,7 +57,7 @@ tightly against neighbouring panels instead of forcing extra column/row
 width (\code{plotHeatmap()} does this for every annotation strip). Because
 \code{"space"} reserves no room for that text, it can get clipped at the edge
 of the plotting device when there isn't enough surrounding space -- most
-likely with \code{side = "left"} or \code{side = "bottom"}, where the (possibly
+likely with \code{side = "right"} or \code{side = "bottom"}, where the (possibly
 rotated) label competes for space with other axis labels. Increase the
 figure's height or width if labels are clipped in that configuration.
 }

@@ -14,9 +14,11 @@
 #' dendrogram sits further out; by default this puts both on the same side
 #' for each axis. Pass named variable vectors to `rowVars` or `colVars` to
 #' control annotation strip labels; pass `NULL` to `rowAnnotationSide`/
-#' `colAnnotationSide` to omit that annotation panel entirely (it is dropped
-#' from the layout rather than left blank, unlike `showRowDendro`/
-#' `showColDendro`).
+#' `colAnnotationSide` to omit that annotation panel entirely. Any omitted
+#' panel -- an annotation set to `NULL`, a dendrogram hidden with
+#' `showRowDendro`/`showColDendro = FALSE`, or a dendrogram that was never
+#' stored -- is dropped from the grid rather than left as a blank but
+#' still-sized slot, so the remaining panels use the reclaimed space.
 #'
 #' Each annotation strip's variable-name axis text is wrapped with
 #' `patchwork::free(type = "space")` so it packs tightly against the heatmap
@@ -75,8 +77,6 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     colDendroSide <- match.arg(colDendroSide, c("top", "bottom"))
     if (!is.null(rowAnnotationSide)) rowAnnotationSide <- match.arg(rowAnnotationSide, c("left", "right"))
     if (!is.null(colAnnotationSide)) colAnnotationSide <- match.arg(colAnnotationSide, c("top", "bottom"))
-    spacer <- patchwork::plot_spacer()
-    col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else spacer
     # `free(type = "space")` lets each annotation strip's variable-name axis
     # text occupy space without reserving room for it in the shared grid, so
     # annotations with different label lengths still pack tightly against
@@ -85,19 +85,33 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
         (length(colVars) || (is.null(colVars) && ncol(SummarizedExperiment::colData(x))))) {
         patchwork::free(plotColData(x, vars = colVars, side = colAnnotationSide), type = "space")
     } else {
-        spacer
+        NULL
     }
     row_data <- if (!is.null(rowAnnotationSide) &&
         (length(rowVars) || (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x))))) {
         patchwork::free(plotRowData(x, vars = rowVars, side = rowAnnotationSide), type = "space")
     } else {
-        spacer
+        NULL
     }
-    row_dendro <- if (showRowDendro && !is.null(rowDendro(x))) plotRowDendro(x, side = rowDendroSide) else spacer
+    col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else NULL
+    row_dendro <- if (showRowDendro && !is.null(rowDendro(x))) plotRowDendro(x, side = rowDendroSide) else NULL
     main <- plotHeatmapMain(x, ...)
     guide <- patchwork::guide_area()
-    layout <- .heatmap_design(rowDendroSide, rowAnnotationSide, colDendroSide, colAnnotationSide, guideWidth)
+    # A hidden/omitted panel's *Side is reset to NULL here so `.heatmap_design()`
+    # drops its letter from the grid entirely, rather than passing through a
+    # side that no longer has a matching panel. `patchwork::wrap_plots()`
+    # would otherwise still reserve a phantom slot for an unused
+    # `plot_spacer()` sitting in `panels` even when its letter never appears
+    # in `design`, leaving a gap where the omitted panel used to be.
+    layout <- .heatmap_design(
+        rowDendroSide = if (is.null(row_dendro)) NULL else rowDendroSide,
+        rowAnnotationSide = if (is.null(row_data)) NULL else rowAnnotationSide,
+        colDendroSide = if (is.null(col_dendro)) NULL else colDendroSide,
+        colAnnotationSide = if (is.null(col_data)) NULL else colAnnotationSide,
+        guideWidth = guideWidth
+    )
     panels <- list(A = col_dendro, B = col_data, C = row_dendro, D = row_data, E = main, M = guide)
+    panels <- panels[!vapply(panels, is.null, logical(1))]
     patchwork::wrap_plots(panels, design = layout$design) +
         patchwork::plot_layout(
             widths = layout$widths, heights = layout$heights,
@@ -113,27 +127,29 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
 # a side, the annotation sits adjacent to the main panel and the dendrogram
 # sits further out, matching the package's default layout. The guide column
 # ("M") is always last and only occupies the main panel's row.
-# `rowAnnotationSide`/`colAnnotationSide` may be `NULL` (annotation omitted),
-# in which case that component is dropped from the grid instead of
-# reserving a blank slot for it.
+# Any of the four side arguments may be `NULL`, meaning that component's
+# panel is omitted entirely: it is dropped from the grid instead of
+# reserving a blank slot for it. `identical()` (rather than `==`) is used
+# throughout so a `NULL` side simply never matches "left"/"right"/"top"/
+# "bottom", instead of raising a length-zero comparison error.
 .heatmap_design <- function(rowDendroSide, rowAnnotationSide, colDendroSide, colAnnotationSide, guideWidth) {
     row_left <- c(
-        if (rowDendroSide == "left") "dendro",
+        if (identical(rowDendroSide, "left")) "dendro",
         if (identical(rowAnnotationSide, "left")) "annotation"
     )
     row_right <- c(
         if (identical(rowAnnotationSide, "right")) "annotation",
-        if (rowDendroSide == "right") "dendro"
+        if (identical(rowDendroSide, "right")) "dendro"
     )
     horiz_order <- c(row_left, "main", row_right)
 
     col_top <- c(
-        if (colDendroSide == "top") "dendro",
+        if (identical(colDendroSide, "top")) "dendro",
         if (identical(colAnnotationSide, "top")) "annotation"
     )
     col_bottom <- c(
         if (identical(colAnnotationSide, "bottom")) "annotation",
-        if (colDendroSide == "bottom") "dendro"
+        if (identical(colDendroSide, "bottom")) "dendro"
     )
     vert_order <- c(col_top, "main", col_bottom)
 

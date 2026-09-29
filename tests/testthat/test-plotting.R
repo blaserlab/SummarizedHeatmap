@@ -34,6 +34,19 @@ test_that("annotation tiles label their variable with axis text matching the mai
     expect_equal(row_plot$theme$axis.text.x$angle, 90)
 })
 
+test_that("plotRowData()'s variable-name label sits at the side with free space by default", {
+    # In `plotHeatmap()`'s composite grid, a row-axis panel's neighbour
+    # above it is always blank regardless of whether the panel is placed to
+    # the "left" or "right" of the heatmap, so anchoring the label at "top"
+    # keeps it compact on either side; "right" (the more clipping-prone
+    # option per the docs) anchors it at "bottom" instead.
+    x <- make_heatmap()
+    left_plot <- plotRowData(x, vars = "feature_type", side = "left")
+    right_plot <- plotRowData(x, vars = "feature_type", side = "right")
+    expect_equal(left_plot$scales$get_scales("x")$position, "top")
+    expect_equal(right_plot$scales$get_scales("x")$position, "bottom")
+})
+
 test_that("multi-variable annotation results compose safely via wrap_plots(list(...))", {
     # Combining a multi-variable annotation patchwork directly with another
     # plot via `/`/`+`/`|` can flatten both objects' panel lists together
@@ -184,7 +197,8 @@ test_that("plotHeatmap()'s *AnnotationSide arguments accept NULL to omit that pa
 
     # `colAnnotationSide = NULL` drops the column annotation panel from the
     # layout entirely (rather than leaving a reserved but blank slot, as
-    # `showColDendro = FALSE` does for the dendrogram).
+    # `showColDendro = FALSE` also does for the dendrogram -- see the test
+    # below).
     p_no_col_ann <- plotHeatmap(x, colAnnotationSide = NULL)
     present <- c("A", "C", "D", "E", "M")
     expect_equal(length(p_no_col_ann$patches$layout$design$t), length(present))
@@ -197,6 +211,48 @@ test_that("plotHeatmap()'s *AnnotationSide arguments accept NULL to omit that pa
     expect_equal(length(p_no_row_ann$patches$layout$design$t), length(present))
     main_nra <- panel_rect(p_no_row_ann, "E", letters = present)
     expect_lt(panel_rect(p_no_row_ann, "C", letters = present)$l, main_nra$l)
+})
+
+test_that("omitted panels don't leave an unreferenced plot_spacer() behind", {
+    # `patchwork::wrap_plots()` silently retains an unused `plot_spacer()` in
+    # `$patches$plots` even when its letter never appears in `design` --
+    # unlike an unused ordinary ggplot, which is dropped entirely. That
+    # leftover spacer visibly distorted the rendered layout (a gap where the
+    # omitted panel used to be) despite `$patches$layout$design` looking
+    # correct, so `plotHeatmap()` must exclude hidden panels from the list
+    # passed to `wrap_plots()` rather than substituting a spacer for them.
+    x <- make_heatmap()
+    SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
+
+    baseline <- length(plotHeatmap(x)$patches$plots)
+    expect_equal(length(plotHeatmap(x, rowAnnotationSide = NULL)$patches$plots), baseline - 1L)
+    expect_equal(length(plotHeatmap(x, colAnnotationSide = NULL)$patches$plots), baseline - 1L)
+    expect_equal(length(plotHeatmap(x, showRowDendro = FALSE)$patches$plots), baseline - 1L)
+    expect_equal(length(plotHeatmap(x, showColDendro = FALSE)$patches$plots), baseline - 1L)
+    expect_equal(
+        length(plotHeatmap(x, showRowDendro = FALSE, showColDendro = FALSE, rowAnnotationSide = NULL)$patches$plots),
+        baseline - 3L
+    )
+})
+
+test_that("showRowDendro/showColDendro = FALSE drop the dendrogram's reserved grid slot", {
+    x <- make_heatmap()
+
+    # With the row dendrogram hidden, the row annotation panel (still
+    # present, at its default "left" side) should be adjacent to the main
+    # heatmap panel, not separated by a leftover blank column.
+    p_no_row_dendro <- plotHeatmap(x, showRowDendro = FALSE)
+    present <- c("A", "B", "D", "E", "M")
+    expect_equal(length(p_no_row_dendro$patches$layout$design$t), length(present))
+    main_nrd <- panel_rect(p_no_row_dendro, "E", letters = present)
+    expect_lt(panel_rect(p_no_row_dendro, "D", letters = present)$l, main_nrd$l)
+
+    # Likewise for the column dendrogram.
+    p_no_col_dendro <- plotHeatmap(x, showColDendro = FALSE)
+    present <- c("B", "C", "D", "E", "M")
+    expect_equal(length(p_no_col_dendro$patches$layout$design$t), length(present))
+    main_ncd <- panel_rect(p_no_col_dendro, "E", letters = present)
+    expect_lt(panel_rect(p_no_col_dendro, "B", letters = present)$t, main_ncd$t)
 })
 
 test_that("plotHeatmap() rejects sides that don't apply to a panel's axis", {
