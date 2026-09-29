@@ -29,10 +29,11 @@
 #' @param x A SummarizedHeatmap object.
 #' @param vars Character vector of `rowData` names. A named vector uses its
 #'   names as displayed labels.
-#' @param side Annotation placement: `"right"`, `"left"`, `"top"`, or
-#'   `"bottom"`. `"left"`/`"bottom"` place the variable-name label where it
-#'   is more prone to clipping when combined with
-#'   `patchwork::free(type = "space")`; see Details.
+#' @param side Which side of the annotation tiles the variable-name label sits
+#'   on: `"right"` or `"left"` for row annotations (the tiles are always laid
+#'   out with row identifiers on the vertical axis, matching the heatmap's
+#'   rows). `"left"` places the label where it is more prone to clipping when
+#'   combined with `patchwork::free(type = "space")`; see Details.
 #' @param tileColor Tile border colour.
 #' @param palette Optional named values passed to `scale_fill_manual()`.
 #' @param showNames Whether to display row or column names on the annotation axis.
@@ -46,7 +47,11 @@
 plotRowData <- function(x, vars = NULL, side = "right", tileColor = "white", palette = NULL,
                         showNames = FALSE) {
     .checkSummarizedHeatmap(x)
-    side <- match.arg(side, c("right", "left", "top", "bottom"))
+    # Row annotation tiles are always laid out with row identifiers on the
+    # vertical axis (matching the heatmap's rows), so the panel can only sit
+    # to the left or right of the heatmap; "top"/"bottom" would silently
+    # produce a mis-oriented, column-style plot (see `.annotation_plot()`).
+    side <- match.arg(side, c("right", "left"))
     .annotation_plots(x, 1L, vars, side, tileColor, palette, showNames)
 }
 
@@ -59,6 +64,12 @@ plotRowData <- function(x, vars = NULL, side = "right", tileColor = "white", pal
 #' [plotRowData()] for alignment and safe-composition details).
 #'
 #' @inheritParams plotRowData
+#' @param side Which side of the annotation tiles the variable-name label
+#'   sits on: `"top"` or `"bottom"` for column annotations (the tiles are
+#'   always laid out with column identifiers on the horizontal axis,
+#'   matching the heatmap's columns). `"bottom"` places the label where it is
+#'   more prone to clipping when combined with `patchwork::free(type =
+#'   "space")`; see Details.
 #' @return A ggplot for one variable, a patchwork for multiple variables, or a
 #'   spacer when no column annotations are present.
 #' @examples
@@ -69,6 +80,10 @@ plotRowData <- function(x, vars = NULL, side = "right", tileColor = "white", pal
 plotColData <- function(x, vars = NULL, side = "top", tileColor = "white", palette = NULL,
                         showNames = FALSE) {
     .checkSummarizedHeatmap(x)
-    side <- match.arg(side, c("top", "bottom", "right", "left"))
+    # Column annotation tiles are always laid out with column identifiers on
+    # the horizontal axis (matching the heatmap's columns), so the panel can
+    # only sit above or below the heatmap; "left"/"right" would silently
+    # produce a mis-oriented, row-style plot (see `.annotation_plot()`).
+    side <- match.arg(side, c("top", "bottom"))
     .annotation_plots(x, 2L, vars, side, tileColor, palette, showNames)
 }

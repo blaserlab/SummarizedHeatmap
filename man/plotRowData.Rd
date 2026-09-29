@@ -19,10 +19,11 @@ plotRowData(
 \item{vars}{Character vector of \code{rowData} names. A named vector uses its
 names as displayed labels.}
 
-\item{side}{Annotation placement: \code{"right"}, \code{"left"}, \code{"top"}, or
-\code{"bottom"}. \code{"left"}/\code{"bottom"} place the variable-name label where it
-is more prone to clipping when combined with
-\code{patchwork::free(type = "space")}; see Details.}
+\item{side}{Which side of the annotation tiles the variable-name label sits
+on: \code{"right"} or \code{"left"} for row annotations (the tiles are always laid
+out with row identifiers on the vertical axis, matching the heatmap's
+rows). \code{"left"} places the label where it is more prone to clipping when
+combined with \code{patchwork::free(type = "space")}; see Details.}
 
 \item{tileColor}{Tile border colour.}
 

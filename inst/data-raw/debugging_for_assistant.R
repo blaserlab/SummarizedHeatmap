@@ -1,3 +1,4 @@
+devtools::load_all()
 make_test_hm <- function() {
   set.seed(2026)
   mat <- matrix(rnorm(48),

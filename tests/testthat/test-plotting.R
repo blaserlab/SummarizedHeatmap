@@ -60,6 +60,36 @@ test_that("annotation variables and missing dendrograms are validated", {
     expect_error(plotHeatmapMain("not a heatmap"), "must be a SummarizedHeatmap")
 })
 
+test_that("plotRowData()/plotColData() reject sides that don't apply to their axis", {
+    # Row annotation tiles always place row identifiers on the vertical
+    # axis, so only left/right placement makes sense; top/bottom previously
+    # silently produced a mis-oriented, column-style plot instead of
+    # erroring.
+    x <- make_heatmap()
+    expect_error(plotRowData(x, vars = "feature_type", side = "top"), "'arg' should be one of")
+    expect_error(plotRowData(x, vars = "feature_type", side = "bottom"), "'arg' should be one of")
+    # Column annotation tiles always place column identifiers on the
+    # horizontal axis, so only top/bottom placement makes sense; left/right
+    # previously silently produced a mis-oriented, row-style plot instead of
+    # erroring.
+    expect_error(plotColData(x, vars = "condition", side = "left"), "'arg' should be one of")
+    expect_error(plotColData(x, vars = "condition", side = "right"), "'arg' should be one of")
+})
+
+test_that("plotRowData()/plotColData() lay tiles out along their matching axis", {
+    x <- make_heatmap()
+    # Row annotation: one tile per row, so the (discrete) position scale is
+    # on y and there are as many break positions as rows.
+    row_plot <- plotRowData(x, vars = "feature_type")
+    expect_true("y" %in% names(row_plot$mapping))
+    expect_equal(length(ggplot2::layer_scales(row_plot)$y$get_labels()), nrow(x))
+    # Column annotation: one tile per column, so the (discrete) position
+    # scale is on x and there are as many break positions as columns.
+    col_plot <- plotColData(x, vars = "condition")
+    expect_true("x" %in% names(col_plot$mapping))
+    expect_equal(length(ggplot2::layer_scales(col_plot)$x$get_labels()), ncol(x))
+})
+
 test_that("plotHeatmap()'s guideWidth controls the guide column width", {
     x <- make_heatmap()
     expect_equal(plotHeatmap(x)$patches$layout$widths[[4]], 3)

@@ -89,7 +89,10 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
     # `plot_layout(heights = ...)` or misplace panels under
     # `plot_layout(design = ...)`), use `patchwork::wrap_plots(list(...))`
     # instead of the operators; see `plotColData()`/`plotRowData()`.
-    if (margin == 2L && side %in% c("top", "bottom")) {
+    # `plotRowData()`/`plotColData()` restrict `side` to left/right or
+    # top/bottom respectively, so `margin == 2L` (column annotations) always
+    # implies `side %in% c("top", "bottom")` here.
+    if (margin == 2L) {
         patchwork::wrap_plots(plots, ncol = 1L, guides = "auto")
     } else {
         patchwork::wrap_plots(plots, guides = "auto")
