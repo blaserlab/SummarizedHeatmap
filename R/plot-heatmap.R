@@ -8,6 +8,17 @@
 #' left of the heatmap in that order. Pass named variable
 #' vectors to `rowVars` or `colVars` to control annotation strip labels.
 #'
+#' Each annotation strip's variable-name axis text is wrapped with
+#' `patchwork::free(type = "space")` so it packs tightly against the heatmap
+#' instead of forcing extra column/row width (see `plotColData()`/
+#' `plotRowData()` for the axis text itself). Because `"space"` reserves no
+#' room for that text, it can get clipped at the edge of the plotting device
+#' if there isn't enough surrounding space to draw it -- most likely with the
+#' non-default `rowAnnotationSide = "left"` or `colAnnotationSide = "bottom"`,
+#' where the (possibly rotated) label competes for space with the heatmap's
+#' own row/column identifier labels. Increase the figure's height or width if
+#' labels are clipped in that configuration.
+#'
 #' @param x A SummarizedHeatmap object.
 #' @param rowVars,colVars Optional annotation variables to display. `NULL`
 #'   includes all available variables.
@@ -15,7 +26,9 @@
 #' @param rowDendroSide,colDendroSide Orientation sides passed to the
 #'   dendrogram component plotters.
 #' @param rowAnnotationSide,colAnnotationSide Placement sides passed to the
-#'   annotation component plotters.
+#'   annotation component plotters. `"left"` (rows) and `"bottom"` (columns)
+#'   place the annotation's variable-name label where it can be clipped if
+#'   the figure is too small; see Details.
 #' @param collectGuides Collect guides into a shared guide area.
 #' @param guideWidth Relative width of the guide area column, on the same
 #'   scale as the dendrogram/annotation (`1`) and heatmap body (`8`) column

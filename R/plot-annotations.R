@@ -16,10 +16,23 @@
 #' operator to combine them safely (this is how `plotHeatmap()` does it
 #' internally).
 #'
+#' When composing a custom layout, wrap the result with
+#' `patchwork::free(type = "space")` so its variable-name axis text packs
+#' tightly against neighbouring panels instead of forcing extra column/row
+#' width (`plotHeatmap()` does this for every annotation strip). Because
+#' `"space"` reserves no room for that text, it can get clipped at the edge
+#' of the plotting device when there isn't enough surrounding space -- most
+#' likely with `side = "left"` or `side = "bottom"`, where the (possibly
+#' rotated) label competes for space with other axis labels. Increase the
+#' figure's height or width if labels are clipped in that configuration.
+#'
 #' @param x A SummarizedHeatmap object.
 #' @param vars Character vector of `rowData` names. A named vector uses its
 #'   names as displayed labels.
-#' @param side Annotation placement: `"right"`, `"left"`, `"top"`, or `"bottom"`.
+#' @param side Annotation placement: `"right"`, `"left"`, `"top"`, or
+#'   `"bottom"`. `"left"`/`"bottom"` place the variable-name label where it
+#'   is more prone to clipping when combined with
+#'   `patchwork::free(type = "space")`; see Details.
 #' @param tileColor Tile border colour.
 #' @param palette Optional named values passed to `scale_fill_manual()`.
 #' @param showNames Whether to display row or column names on the annotation axis.

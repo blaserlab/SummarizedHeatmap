@@ -19,7 +19,10 @@ plotColData(
 \item{vars}{Character vector of \code{rowData} names. A named vector uses its
 names as displayed labels.}
 
-\item{side}{Annotation placement: \code{"right"}, \code{"left"}, \code{"top"}, or \code{"bottom"}.}
+\item{side}{Annotation placement: \code{"right"}, \code{"left"}, \code{"top"}, or
+\code{"bottom"}. \code{"left"}/\code{"bottom"} place the variable-name label where it
+is more prone to clipping when combined with
+\code{patchwork::free(type = "space")}; see Details.}
 
 \item{tileColor}{Tile border colour.}
 

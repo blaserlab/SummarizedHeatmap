@@ -31,7 +31,9 @@ includes all available variables.}
 dendrogram component plotters.}
 
 \item{rowAnnotationSide, colAnnotationSide}{Placement sides passed to the
-annotation component plotters.}
+annotation component plotters. \code{"left"} (rows) and \code{"bottom"} (columns)
+place the annotation's variable-name label where it can be clipped if
+the figure is too small; see Details.}
 
 \item{collectGuides}{Collect guides into a shared guide area.}
 
@@ -54,6 +56,18 @@ dendrogram, row annotations, then the main heatmap. Column annotation plots
 are stacked vertically; the row dendrogram and row annotations sit to the
 left of the heatmap in that order. Pass named variable
 vectors to \code{rowVars} or \code{colVars} to control annotation strip labels.
+}
+\details{
+Each annotation strip's variable-name axis text is wrapped with
+\code{patchwork::free(type = "space")} so it packs tightly against the heatmap
+instead of forcing extra column/row width (see \code{plotColData()}/
+\code{plotRowData()} for the axis text itself). Because \code{"space"} reserves no
+room for that text, it can get clipped at the edge of the plotting device
+if there isn't enough surrounding space to draw it -- most likely with the
+non-default \code{rowAnnotationSide = "left"} or \code{colAnnotationSide = "bottom"},
+where the (possibly rotated) label competes for space with the heatmap's
+own row/column identifier labels. Increase the figure's height or width if
+labels are clipped in that configuration.
 }
 \examples{
 mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))

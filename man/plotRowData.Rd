@@ -19,7 +19,10 @@ plotRowData(
 \item{vars}{Character vector of \code{rowData} names. A named vector uses its
 names as displayed labels.}
 
-\item{side}{Annotation placement: \code{"right"}, \code{"left"}, \code{"top"}, or \code{"bottom"}.}
+\item{side}{Annotation placement: \code{"right"}, \code{"left"}, \code{"top"}, or
+\code{"bottom"}. \code{"left"}/\code{"bottom"} place the variable-name label where it
+is more prone to clipping when combined with
+\code{patchwork::free(type = "space")}; see Details.}
 
 \item{tileColor}{Tile border colour.}
 
@@ -46,6 +49,16 @@ into the parent's, which may break a \code{plot_layout(heights = ...)}/\code{ pl
 \code{patchwork::wrap_plots(list(annotation, otherPlot), ...)} instead of an
 operator to combine them safely (this is how \code{plotHeatmap()} does it
 internally).
+
+When composing a custom layout, wrap the result with
+\code{patchwork::free(type = "space")} so its variable-name axis text packs
+tightly against neighbouring panels instead of forcing extra column/row
+width (\code{plotHeatmap()} does this for every annotation strip). Because
+\code{"space"} reserves no room for that text, it can get clipped at the edge
+of the plotting device when there isn't enough surrounding space -- most
+likely with \code{side = "left"} or \code{side = "bottom"}, where the (possibly
+rotated) label competes for space with other axis labels. Increase the
+figure's height or width if labels are clipped in that configuration.
 }
 \examples{
 mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
