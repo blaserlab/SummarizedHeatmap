@@ -1,8 +1,12 @@
 #' Plot row annotations
 #'
 #' Each selected row annotation is represented by an independent ggplot. A
-#' single variable returns a ggplot; multiple variables return a patchwork of
-#' those plots.
+#' single variable returns a ggplot; multiple variables are stacked into one
+#' patchwork and returned as a single self-contained patch (via
+#' `patchwork::wrap_elements()`). Fixing the internal panels this way keeps
+#' the result safe to combine with other plots using patchwork operators
+#' (`+`, `/`, `|`) or `patchwork::wrap_plots()` without its individual
+#' variable panels leaking into the surrounding layout.
 #'
 #' @param x A SummarizedHeatmap object.
 #' @param vars Character vector of `rowData` names. A named vector uses its
@@ -11,8 +15,8 @@
 #' @param tileColor Tile border colour.
 #' @param palette Optional named values passed to `scale_fill_manual()`.
 #' @param showNames Whether to display row or column names on the annotation axis.
-#' @return A ggplot for one variable, a patchwork for multiple variables, or a
-#'   spacer when no row annotations are present.
+#' @return A ggplot for one variable, a single wrapped patch (see Details) for
+#'   multiple variables, or a spacer when no row annotations are present.
 #' @examples
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' rd <- S4Vectors::DataFrame(kind = rep(c("gene", "control"), 2), row.names = letters[1:4])
@@ -28,11 +32,13 @@ plotRowData <- function(x, vars = NULL, side = "right", tileColor = "white", pal
 #' Plot column annotations
 #'
 #' Each selected column annotation is represented by an independent ggplot. A
-#' single variable returns a ggplot; multiple variables return a patchwork.
+#' single variable returns a ggplot; multiple variables are stacked into one
+#' patchwork and returned as a single self-contained patch (see
+#' [plotRowData()] for why).
 #'
 #' @inheritParams plotRowData
-#' @return A ggplot for one variable, a patchwork for multiple variables, or a
-#'   spacer when no column annotations are present.
+#' @return A ggplot for one variable, a single wrapped patch (see Details) for
+#'   multiple variables, or a spacer when no column annotations are present.
 #' @examples
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' cd <- S4Vectors::DataFrame(group = c("A", "B", "A"), row.names = LETTERS[1:3])

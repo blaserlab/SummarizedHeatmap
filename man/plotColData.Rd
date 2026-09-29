@@ -28,12 +28,14 @@ names as displayed labels.}
 \item{showNames}{Whether to display row or column names on the annotation axis.}
 }
 \value{
-A ggplot for one variable, a patchwork for multiple variables, or a
-spacer when no column annotations are present.
+A ggplot for one variable, a single wrapped patch (see Details) for
+multiple variables, or a spacer when no column annotations are present.
 }
 \description{
 Each selected column annotation is represented by an independent ggplot. A
-single variable returns a ggplot; multiple variables return a patchwork.
+single variable returns a ggplot; multiple variables are stacked into one
+patchwork and returned as a single self-contained patch (see
+\code{\link[=plotRowData]{plotRowData()}} for why).
 }
 \examples{
 mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))

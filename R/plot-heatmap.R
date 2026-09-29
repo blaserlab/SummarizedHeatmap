@@ -17,6 +17,11 @@
 #' @param rowAnnotationSide,colAnnotationSide Placement sides passed to the
 #'   annotation component plotters.
 #' @param collectGuides Collect guides into a shared guide area.
+#' @param guideWidth Relative width of the guide area column, on the same
+#'   scale as the dendrogram/annotation (`1`) and heatmap body (`8`) column
+#'   widths. Increase this when stacked legends (e.g. several annotation
+#'   variables) overflow their column and collide with the heatmap's row
+#'   labels or with each other.
 #' @param ... Additional arguments passed to `plotHeatmapMain()`.
 #' @return A patchwork object.
 #' @examples
@@ -28,17 +33,30 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
                         showRowDendro = TRUE, showColDendro = TRUE,
                         rowDendroSide = "left", colDendroSide = "top",
                         rowAnnotationSide = "right", colAnnotationSide = "top",
-                        collectGuides = TRUE, ...) {
+                        collectGuides = TRUE, guideWidth = 3, ...) {
     .checkSummarizedHeatmap(x)
+    if (!is.numeric(guideWidth) || length(guideWidth) != 1L || is.na(guideWidth) || guideWidth <= 0) {
+        stop("'guideWidth' must be a single positive number", call. = FALSE)
+    }
+    colAnnotationSide <- match.arg(colAnnotationSide, c("top", "bottom", "right", "left"))
+    rowAnnotationSide <- match.arg(rowAnnotationSide, c("right", "left", "top", "bottom"))
     spacer <- patchwork::plot_spacer()
     col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else spacer
+    # Build annotation strips with `.annotation_plots(..., wrap = FALSE)`
+    # rather than the exported `plotColData()`/`plotRowData()`. Those wrap
+    # multi-variable results with `wrap_elements()` so they compose safely
+    # with patchwork operators, but a wrapped composite can no longer be
+    # aligned to the axis positions of sibling panels. Composing the raw,
+    # unwrapped composite through this function's list + `design` layout is
+    # already safe from the same flattening operators would cause, so the
+    # unwrapped form keeps annotation strips pixel-aligned with the heatmap.
     col_data <- if (length(colVars) || (is.null(colVars) && ncol(SummarizedExperiment::colData(x)))) {
-        plotColData(x, vars = colVars, side = colAnnotationSide)
+        .annotation_plots(x, 2L, colVars, colAnnotationSide, tileColor = "white", palette = NULL, showNames = FALSE, wrap = FALSE)
     } else {
         spacer
     }
     row_data <- if (length(rowVars) || (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x)))) {
-        plotRowData(x, vars = rowVars, side = rowAnnotationSide)
+        .annotation_plots(x, 1L, rowVars, rowAnnotationSide, tileColor = "white", palette = NULL, showNames = FALSE, wrap = FALSE)
     } else {
         spacer
     }
@@ -49,7 +67,7 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     design <- "##A#\n##B#\nCDEM"
     patchwork::wrap_plots(panels, design = design) +
         patchwork::plot_layout(
-            widths = c(1, 1, 8, 1), heights = c(1, 1, 8),
+            widths = c(1, 1, 8, guideWidth), heights = c(1, 1, 8),
             guides = if (collectGuides) "collect" else "keep"
         )
 }

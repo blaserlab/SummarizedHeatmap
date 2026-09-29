@@ -15,6 +15,7 @@ plotHeatmap(
   rowAnnotationSide = "right",
   colAnnotationSide = "top",
   collectGuides = TRUE,
+  guideWidth = 3,
   ...
 )
 }
@@ -33,6 +34,12 @@ dendrogram component plotters.}
 annotation component plotters.}
 
 \item{collectGuides}{Collect guides into a shared guide area.}
+
+\item{guideWidth}{Relative width of the guide area column, on the same
+scale as the dendrogram/annotation (\code{1}) and heatmap body (\code{8}) column
+widths. Increase this when stacked legends (e.g. several annotation
+variables) overflow their column and collide with the heatmap's row
+labels or with each other.}
 
 \item{...}{Additional arguments passed to \code{plotHeatmapMain()}.}
 }

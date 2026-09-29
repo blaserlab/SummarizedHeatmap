@@ -43,7 +43,7 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
     list(dendrogram = dendrogram, order = as.integer(order.dendrogram(dendrogram)))
 }
 
-.annotation_plots <- function(x, margin, vars, side, tileColor, palette, showNames) {
+.annotation_plots <- function(x, margin, vars, side, tileColor, palette, showNames, wrap = TRUE) {
     metadata <- if (margin == 1L) SummarizedExperiment::rowData(x) else SummarizedExperiment::colData(x)
     data <- as.data.frame(metadata)
     ids <- .axis_ids(x, margin)
@@ -77,14 +77,27 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
         )
     })
     if (length(plots) == 1L) {
-        plots[[1L]]
-    } else if (margin == 2L && side %in% c("top", "bottom")) {
-        # `auto` lets a containing plotHeatmap() collect these guides into its
-        # shared guide area while retaining a standalone component patchwork.
+        return(plots[[1L]])
+    }
+    composite <- if (margin == 2L && side %in% c("top", "bottom")) {
         patchwork::wrap_plots(plots, ncol = 1L, guides = "auto")
     } else {
         patchwork::wrap_plots(plots, guides = "auto")
     }
+    if (!wrap) {
+        return(composite)
+    }
+    # `wrap_elements()` fixes the composite's internal panels into a single
+    # opaque patch. Without it, combining the multi-variable result with
+    # another plot via patchwork operators (`+`, `/`, `|`) would silently
+    # flatten its plot list into the parent's, changing the effective panel
+    # count and breaking layouts built with `plot_layout(heights = ...)` or
+    # `plot_layout(design = ...)`. The trade-off is that a wrapped composite
+    # can no longer be aligned to sibling panels' actual axis positions, so
+    # `plotHeatmap()` calls `.annotation_plots()` directly with `wrap = FALSE`
+    # to keep its column/row annotation strips pixel-aligned with the main
+    # heatmap panel.
+    patchwork::wrap_elements(panel = composite)
 }
 
 .annotation_plot <- function(value, axis_ids, label, side, tileColor, palette, showNames) {
