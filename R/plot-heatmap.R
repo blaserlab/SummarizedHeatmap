@@ -51,10 +51,12 @@
 #'   widths. Increase this when stacked legends (e.g. several annotation
 #'   variables) overflow their column and collide with the heatmap's row
 #'   labels or with each other.
-#' @param ... Additional arguments passed to `plotHeatmapMain()`. `flip` is
-#'   not accepted here -- flipping only the main panel would misalign it
-#'   against the annotation and dendrogram panels arranged around it; call
-#'   `plotHeatmapMain()` directly for a flipped main panel on its own.
+#' @param ... Additional arguments passed to `plotHeatmapMain()`, such as
+#'   `low`/`mid`/`high`/`midpoint` (fill scale) or `fillTitle` (legend
+#'   title). `flip` is not accepted here -- flipping only the main panel
+#'   would misalign it against the annotation and dendrogram panels arranged
+#'   around it; call `plotHeatmapMain()` directly for a flipped main panel on
+#'   its own.
 #' @return A patchwork object.
 #' @examples
 #' mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))

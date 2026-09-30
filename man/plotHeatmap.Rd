@@ -48,10 +48,12 @@ widths. Increase this when stacked legends (e.g. several annotation
 variables) overflow their column and collide with the heatmap's row
 labels or with each other.}
 
-\item{...}{Additional arguments passed to \code{plotHeatmapMain()}. \code{flip} is
-not accepted here -- flipping only the main panel would misalign it
-against the annotation and dendrogram panels arranged around it; call
-\code{plotHeatmapMain()} directly for a flipped main panel on its own.}
+\item{...}{Additional arguments passed to \code{plotHeatmapMain()}, such as
+\code{low}/\code{mid}/\code{high}/\code{midpoint} (fill scale) or \code{fillTitle} (legend
+title). \code{flip} is not accepted here -- flipping only the main panel
+would misalign it against the annotation and dendrogram panels arranged
+around it; call \code{plotHeatmapMain()} directly for a flipped main panel on
+its own.}
 }
 \value{
 A patchwork object.

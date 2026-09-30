@@ -286,6 +286,18 @@ test_that("plotHeatmap() rejects sides that don't apply to a panel's axis", {
     expect_error(plotHeatmap(x, rowAnnotationSide = "bottom"), "'arg' should be one of")
 })
 
+test_that("plotHeatmap() forwards midpoint and fillTitle to the main panel via '...'", {
+    x <- make_heatmap()
+    combined <- plotHeatmap(x, midpoint = 2, fillTitle = "Count")
+    fill_labels <- vapply(combined$patches$plots, function(p) {
+        if (is.null(p$labels$fill)) NA_character_ else p$labels$fill
+    }, character(1))
+    expect_true("Count" %in% fill_labels)
+
+    main <- combined$patches$plots[[which(fill_labels == "Count")]]
+    expect_equal(main$scales$get_scales("fill")$rescaler(2, from = c(0, 4)), 0.5)
+})
+
 test_that("plotHeatmap() rejects 'flip' while plotHeatmapMain() still accepts it", {
     x <- make_heatmap()
     # Flipping only the main panel would misalign it against the annotation

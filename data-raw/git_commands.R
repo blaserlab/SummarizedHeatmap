@@ -29,13 +29,12 @@ blaseRtemplates::git_easy_branch(branch = "brad_working")
 # save, add and commit your work but don't push
 blaseRtemplates::write_project_library_catalog()
 gert::git_add("*")
-gert::git_commit("Reject 'flip' in plotHeatmap(), keep it in plotHeatmapMain()
+gert::git_commit("Generalize plotHeatmapMain() defaults for arbitrary numeric assays
 
-plotHeatmap() forwarded arbitrary ... to plotHeatmapMain(), which would
-silently let flip=TRUE transpose only the main panel while leaving
-annotations and dendrograms in their original orientation. Detect flip
-in ... and error with guidance to call plotHeatmapMain() directly
-instead.")
+Add midpoint (default 0) and fillTitle (default \"Value\") arguments
+to plotHeatmapMain(), threading them into scale_fill_gradient2() and
+the fill legend label. Preserves existing low/mid/high/tileColor/flip
+behavior; \"Expression\"-specific default replaced by \"Value\".")
 
 # frequently update your working branch from main or master branch
 # this will first update main or master from remote
