@@ -161,6 +161,14 @@ S4Vectors::setValidity2("SummarizedHeatmap", function(object) {
             "a SummarizedHeatmap must contain exactly one assay, not %d",
             n_assays
         )
+    } else {
+        mat <- SummarizedExperiment::assay(object)
+        if (!is.matrix(mat) || !is.numeric(mat) || is.complex(mat)) {
+            .record_error(
+                errors,
+                "the sole assay of a SummarizedHeatmap must be a numeric, non-complex matrix"
+            )
+        }
     }
 
     .check_order(errors, object@rowOrder, nr, "row")

@@ -91,6 +91,40 @@ test_that("assay<- preserves SummarizedExperiment dimension/dimname validation",
     expect_error(assay(x) <- bad_values)
 })
 
+test_that("assay<- rejects a character-valued replacement", {
+    x <- make_heatmap()
+    bad_values <- matrix(
+        as.character(SummarizedExperiment::assay(x)),
+        nrow(x), ncol(x),
+        dimnames = dimnames(x)
+    )
+    expect_error(
+        assay(x) <- bad_values,
+        "must be a numeric, non-complex"
+    )
+})
+
+test_that("assay<- rejects a complex-valued replacement", {
+    x <- make_heatmap()
+    bad_values <- matrix(
+        complex(real = SummarizedExperiment::assay(x), imaginary = 1),
+        nrow(x), ncol(x),
+        dimnames = dimnames(x)
+    )
+    expect_error(
+        assay(x) <- bad_values,
+        "must be a numeric, non-complex"
+    )
+})
+
+test_that("assay<- accepts a normal numeric replacement", {
+    x <- make_heatmap()
+    new_values <- SummarizedExperiment::assay(x) * 1.5
+    assay(x) <- new_values
+    expect_identical(unname(SummarizedExperiment::assay(x)), unname(new_values))
+    expect_silent(validObject(x))
+})
+
 test_that("plotHeatmap() omits dendrogram panels once assay<- invalidates clustering", {
     # `make_heatmap()` clusters both axes by default; a stored dendrogram
     # normally adds a row and a column dendrogram panel to the composed

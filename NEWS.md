@@ -16,6 +16,10 @@
 * `plotHeatmap(collectGuides = FALSE)` no longer reserves an empty guide-area
   column: the `guide_area()` panel and its `guideWidth` column are now
   omitted from the layout entirely instead of being left blank.
+* The `SummarizedHeatmap` validity method now requires the sole assay to be
+  a numeric, non-complex matrix, matching the constructor's own check. This
+  means `assay<-`/`assays<-` reject replacements that would leave a
+  non-numeric, complex, or non-matrix assay.
 * AI coding assistants (Posit Assistant, OpenAI Codex) were used during
   development to help with refactoring, testing, and documentation; all
   code was reviewed and is maintained by the package author.
