@@ -5,10 +5,12 @@
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' rowDendro(SummarizedHeatmap(mat))
 #' @export
-rowDendro <- function(x) {
-    .checkSummarizedHeatmap(x)
+setGeneric("rowDendro", function(x) standardGeneric("rowDendro"))
+
+#' @rdname rowDendro
+setMethod("rowDendro", "SummarizedHeatmap", function(x) {
     x@rowDendro
-}
+})
 
 #' Access stored column dendrogram
 #' @param x A SummarizedHeatmap object.
@@ -17,10 +19,12 @@ rowDendro <- function(x) {
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' colDendro(SummarizedHeatmap(mat))
 #' @export
-colDendro <- function(x) {
-    .checkSummarizedHeatmap(x)
+setGeneric("colDendro", function(x) standardGeneric("colDendro"))
+
+#' @rdname colDendro
+setMethod("colDendro", "SummarizedHeatmap", function(x) {
     x@colDendro
-}
+})
 
 #' Access row display order
 #' @param x A SummarizedHeatmap object.
@@ -29,10 +33,12 @@ colDendro <- function(x) {
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' rowOrder(SummarizedHeatmap(mat))
 #' @export
-rowOrder <- function(x) {
-    .checkSummarizedHeatmap(x)
+setGeneric("rowOrder", function(x) standardGeneric("rowOrder"))
+
+#' @rdname rowOrder
+setMethod("rowOrder", "SummarizedHeatmap", function(x) {
     x@rowOrder
-}
+})
 
 #' Access column display order
 #' @param x A SummarizedHeatmap object.
@@ -41,7 +47,9 @@ rowOrder <- function(x) {
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' colOrder(SummarizedHeatmap(mat))
 #' @export
-colOrder <- function(x) {
-    .checkSummarizedHeatmap(x)
+setGeneric("colOrder", function(x) standardGeneric("colOrder"))
+
+#' @rdname colOrder
+setMethod("colOrder", "SummarizedHeatmap", function(x) {
     x@colOrder
-}
+})

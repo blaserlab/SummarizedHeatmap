@@ -2,9 +2,12 @@
 % Please edit documentation in R/accessors.R
 \name{rowOrder}
 \alias{rowOrder}
+\alias{rowOrder,SummarizedHeatmap-method}
 \title{Access row display order}
 \usage{
 rowOrder(x)
+
+\S4method{rowOrder}{SummarizedHeatmap}(x)
 }
 \arguments{
 \item{x}{A SummarizedHeatmap object.}

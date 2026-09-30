@@ -2,9 +2,12 @@
 % Please edit documentation in R/accessors.R
 \name{colOrder}
 \alias{colOrder}
+\alias{colOrder,SummarizedHeatmap-method}
 \title{Access column display order}
 \usage{
 colOrder(x)
+
+\S4method{colOrder}{SummarizedHeatmap}(x)
 }
 \arguments{
 \item{x}{A SummarizedHeatmap object.}

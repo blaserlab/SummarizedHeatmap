@@ -2,9 +2,12 @@
 % Please edit documentation in R/accessors.R
 \name{rowDendro}
 \alias{rowDendro}
+\alias{rowDendro,SummarizedHeatmap-method}
 \title{Access stored row dendrogram}
 \usage{
 rowDendro(x)
+
+\S4method{rowDendro}{SummarizedHeatmap}(x)
 }
 \arguments{
 \item{x}{A SummarizedHeatmap object.}

@@ -2,9 +2,12 @@
 % Please edit documentation in R/accessors.R
 \name{colDendro}
 \alias{colDendro}
+\alias{colDendro,SummarizedHeatmap-method}
 \title{Access stored column dendrogram}
 \usage{
 colDendro(x)
+
+\S4method{colDendro}{SummarizedHeatmap}(x)
 }
 \arguments{
 \item{x}{A SummarizedHeatmap object.}
