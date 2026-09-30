@@ -90,3 +90,32 @@ test_that("assay<- preserves SummarizedExperiment dimension/dimname validation",
     bad_values <- SummarizedExperiment::assay(x)[1:3, ]
     expect_error(assay(x) <- bad_values)
 })
+
+test_that("plotHeatmap() omits dendrogram panels once assay<- invalidates clustering", {
+    # `make_heatmap()` clusters both axes by default; a stored dendrogram
+    # normally adds a row and a column dendrogram panel to the composed
+    # patchwork (see `plotHeatmap()`'s `!is.null(rowDendro(x))`/
+    # `colDendro(x)` guards). After `assay<-` invalidates both dendrograms,
+    # those two panels should disappear rather than plotting stale
+    # dendrograms or erroring -- matching the panel count you'd get by
+    # passing `showRowDendro = showColDendro = FALSE` explicitly.
+    x <- make_heatmap()
+    expect_s3_class(rowDendro(x), "dendrogram")
+    expect_s3_class(colDendro(x), "dendrogram")
+    baseline <- length(plotHeatmap(x))
+
+    assay(x) <- SummarizedExperiment::assay(x) * -1
+    expect_null(rowDendro(x))
+    expect_null(colDendro(x))
+
+    p <- plotHeatmap(x)
+    expect_s3_class(p, "patchwork")
+    expect_equal(length(p), baseline - 2L)
+    expect_equal(length(p), length(plotHeatmap(make_heatmap(), showRowDendro = FALSE, showColDendro = FALSE)))
+
+    # Calling the dendrogram plotting functions directly still fails
+    # clearly, rather than silently drawing a dendrogram computed from the
+    # old assay values.
+    expect_error(plotRowDendro(x), "no row dendrogram is stored")
+    expect_error(plotColDendro(x), "no column dendrogram is stored")
+})
