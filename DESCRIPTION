@@ -1,14 +1,18 @@
 Package: SummarizedHeatmap
 Title: Heatmaps for SummarizedExperiment Objects
-Version: 0.99.01
+Version: 0.99.0
 Authors@R:
     person("Bradley", "Blaser", email = "bradley.blaser@osumc.edu",
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3168-5423"))
-Description: Represents clustered assays and their row and column annotations
-    as a SummarizedExperiment-derived object. Heatmap components are returned
-    as ordinary ggplot2 plots and can be composed and customized with
-    patchwork.
+Description: Represents a heatmap as a SummarizedExperiment-derived object,
+    holding a single assay together with its row and column annotations and
+    any hierarchical clustering. Assay values, annotations, display order,
+    and dendrograms stay synchronized as the object is subsetted or
+    reclustered, so a heatmap's components cannot drift out of step with
+    each other. Each visual component (the main heatmap, annotation strips,
+    dendrograms) is returned as an ordinary ggplot2 plot, and these can be
+    composed, laid out, and customized using patchwork.
 License: MIT + file LICENSE
 biocViews: Software, Clustering, Visualization
 Imports:

@@ -26,7 +26,7 @@ options(bitmapType = "cairo")
 library(SummarizedHeatmap)
 ```
 
-# Motivation
+# Introduction
 
 Heatmaps are often built from a matrix and a collection of separate annotation
 vectors. Keeping those pieces synchronized becomes difficult when data are
