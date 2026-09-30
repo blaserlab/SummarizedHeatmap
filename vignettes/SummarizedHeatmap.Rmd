@@ -274,29 +274,61 @@ patchwork::wrap_plots(
 
 # Subsetting and reclustering
 
-Subsetting follows SummarizedExperiment semantics. If selected rows differ in
-membership or order, the stored row dendrogram is cleared and the row order is
-reset to the natural order of the subset. The column state is preserved when
-columns are unchanged. Column subsetting applies the same rule independently.
-Subsetting does not silently recluster; call a clustering helper explicitly
-when a new dendrogram is wanted.
+Subsetting follows SummarizedExperiment semantics: `i` selects rows and `j`
+selects columns. Whether a dimension's clustering survives subsetting depends
+only on whether *that* dimension's membership or order changed:
 
-```{r subset}
-hm_subset <- hm[1:5, c("sample1", "sample3", "sample5")]
-validObject(hm_subset)
-is.null(rowDendro(hm_subset))
-is.null(colDendro(hm_subset))
-rowOrder(hm_subset)
-colOrder(hm_subset)
+- Subsetting rows clears the row dendrogram and resets `rowOrder()` to the
+  natural order of the subset. Column clustering is untouched as long as the
+  columns themselves are unchanged.
+- Subsetting columns clears the column dendrogram and resets `colOrder()`,
+  while row clustering is untouched as long as the rows are unchanged.
+- Subsetting both dimensions at once clears clustering for both, since both
+  have changed.
+
+Subsetting never silently reclusters. Call `clusterRows()`, `clusterCols()`,
+or `clusterHeatmap()` afterward to compute new clustering.
+
+Subsetting rows only, keeping all columns, clears the row dendrogram but
+leaves the column dendrogram and order exactly as they were in `hm`:
+
+```{r subset-rows}
+hm_rows <- hm[1:5, ]
+is.null(rowDendro(hm_rows))
+rowOrder(hm_rows)
+identical(colDendro(hm_rows), colDendro(hm))
+identical(colOrder(hm_rows), colOrder(hm))
 ```
 
-The retained columns still carry their previous clustering because their
-membership and order did not change in this example. Recluster the subset
-explicitly to compute clustering against the smaller assay:
+Subsetting columns only, keeping all rows, has the mirror-image effect: the
+column dendrogram is cleared, and row clustering is preserved:
+
+```{r subset-cols}
+hm_cols <- hm[, c("sample1", "sample3", "sample5")]
+is.null(colDendro(hm_cols))
+colOrder(hm_cols)
+identical(rowDendro(hm_cols), rowDendro(hm))
+identical(rowOrder(hm_cols), rowOrder(hm))
+```
+
+Subsetting both dimensions at once clears clustering for both, since both row
+and column membership changed:
+
+```{r subset-both}
+hm_both <- hm[1:5, c("sample1", "sample3", "sample5")]
+is.null(rowDendro(hm_both))
+is.null(colDendro(hm_both))
+```
+
+Recluster explicitly when new clustering is desired. `clusterRows()` and
+`clusterCols()` recompute a single dimension; `clusterHeatmap()` recomputes
+both:
 
 ```{r recluster}
-hm_subset <- clusterHeatmap(hm_subset)
-validObject(hm_subset)
+hm_both <- clusterHeatmap(hm_both)
+validObject(hm_both)
+class(rowDendro(hm_both))
+class(colDendro(hm_both))
 ```
 
 # Session information
