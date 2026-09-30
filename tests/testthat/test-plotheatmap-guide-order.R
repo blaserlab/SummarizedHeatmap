@@ -1,7 +1,7 @@
 # End-to-end regression test for the guide ordering documented in
 # `.PANEL_GUIDE_ORDER`/`.orderPanelsForGuides()` (R/plot-heatmap.R):
-# `plotHeatmap()` should collect guides in the order column annotation, row
-# annotation, main heatmap, regardless of which side each panel is placed
+# `plotHeatmap()` should collect guides in the order main heatmap, column
+# annotation, row annotation, regardless of which side each panel is placed
 # on. Rather than reaching into patchwork's (undocumented) internal object
 # representation, this renders the real, assembled patchwork object and
 # inspects the grid grob tree that patchwork actually draws -- i.e. the
@@ -39,7 +39,7 @@ guide_title_order <- function(patch, titles) {
     titles[order(match(titles, found))]
 }
 
-test_that("plotHeatmap() collects guides in column-annotation, row-annotation, main order on default sides", {
+test_that("plotHeatmap() collects guides in main, column-annotation, row-annotation order on default sides", {
     x <- make_heatmap()
     p <- plotHeatmap(
         x,
@@ -47,7 +47,7 @@ test_that("plotHeatmap() collects guides in column-annotation, row-annotation, m
         rowVars = c(RowLegendTitle = "feature_type"),
         fillTitle = "MainLegendTitle"
     )
-    titles <- c("ColLegendTitle", "RowLegendTitle", "MainLegendTitle")
+    titles <- c("MainLegendTitle", "ColLegendTitle", "RowLegendTitle")
     expect_identical(guide_title_order(p, titles), titles)
 })
 
@@ -61,10 +61,10 @@ test_that("plotHeatmap() keeps guide order fixed when panels are moved to non-de
         rowDendroSide = "right", rowAnnotationSide = "right",
         colDendroSide = "bottom", colAnnotationSide = "bottom"
     )
-    titles <- c("ColLegendTitle", "RowLegendTitle", "MainLegendTitle")
+    titles <- c("MainLegendTitle", "ColLegendTitle", "RowLegendTitle")
     # Same guide order as the default-sides case above, even though every
     # panel has moved to the opposite side of the heatmap: guide order is
-    # controlled by construction order (`.orderPanelsForGuides()`), not by
-    # where a panel lands spatially.
+    # controlled by each panel's fixed letter identity (`.PANEL_GUIDE_ORDER`/
+    # `.orderPanelsForGuides()`), not by where it lands spatially.
     expect_identical(guide_title_order(p, titles), titles)
 })

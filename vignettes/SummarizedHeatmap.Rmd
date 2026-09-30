@@ -185,8 +185,8 @@ The components can be arranged with patchwork operators, `wrap_plots()`, and
 `plot_layout()`. `free()` releases a panel's alignment on selected sides, and
 `guide_area()` reserves a location for guides when `guides = "collect"` is
 used. In `plotHeatmap()`, the package constructs panels in a fixed grid
-traversal order so collected guides are predictable: column dendrogram,
-column annotations, row dendrogram, row annotations, then the main heatmap.
+traversal order so collected guides are predictable: the main heatmap,
+column dendrogram, column annotations, row dendrogram, then row annotations.
 
 ```{r custom-layout}
 stacked <- patchwork::wrap_plots(
