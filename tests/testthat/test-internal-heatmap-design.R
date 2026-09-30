@@ -1,0 +1,119 @@
+# `.heatmap_design()` returns a plain multi-line character string (the
+# `design` argument `patchwork::wrap_plots()` parses into a grid), plus
+# matching `widths`/`heights` vectors. These helpers re-parse that string
+# ourselves so tests can assert panel placement without reaching into
+# patchwork's own (undocumented) parsed layout.
+design_matrix <- function(design) {
+    rows <- strsplit(design, "\n")[[1]]
+    do.call(rbind, lapply(rows, function(r) strsplit(r, "")[[1]]))
+}
+
+# Bounding box (row/column index ranges) of a letter within the parsed grid,
+# or `NULL` if the letter doesn't appear (i.e. its panel was omitted).
+design_bbox <- function(design, letter) {
+    m <- design_matrix(design)
+    hits <- which(m == letter, arr.ind = TRUE)
+    if (!nrow(hits)) return(NULL)
+    list(
+        top = min(hits[, "row"]), bottom = max(hits[, "row"]),
+        left = min(hits[, "col"]), right = max(hits[, "col"])
+    )
+}
+
+test_that(".heatmap_design() places default sides with annotations adjacent to the main panel", {
+    # Defaults: row dendrogram ("C") and row annotation ("D") both left of
+    # the heatmap ("E"), dendrogram further out; column dendrogram ("A") and
+    # column annotation ("B") both above it, dendrogram further out.
+    layout <- .heatmap_design(
+        rowDendroSide = "left", rowAnnotationSide = "left",
+        colDendroSide = "top", colAnnotationSide = "top",
+        guideWidth = 3
+    )
+    expect_identical(layout$design, "##AM\n##BM\nCDEM")
+    expect_equal(layout$widths, c(1, 1, 8, 3))
+    expect_equal(layout$heights, c(1, 1, 8))
+})
+
+test_that(".heatmap_design() moves the row dendrogram independently of the row annotation", {
+    default <- .heatmap_design("left", "left", "top", "top", guideWidth = 3)
+    main <- design_bbox(default$design, "E")
+
+    dendro_right <- .heatmap_design("right", "left", "top", "top", guideWidth = 3)
+    main_dr <- design_bbox(dendro_right$design, "E")
+    expect_gt(design_bbox(dendro_right$design, "C")$left, main_dr$left)
+    expect_lt(design_bbox(dendro_right$design, "D")$left, main_dr$left)
+})
+
+test_that(".heatmap_design() moves the row annotation independently of the row dendrogram", {
+    ann_right <- .heatmap_design("left", "right", "top", "top", guideWidth = 3)
+    main_ar <- design_bbox(ann_right$design, "E")
+    expect_gt(design_bbox(ann_right$design, "D")$left, main_ar$left)
+    expect_lt(design_bbox(ann_right$design, "C")$left, main_ar$left)
+})
+
+test_that(".heatmap_design() keeps the annotation adjacent when both row panels share a side", {
+    both_right <- .heatmap_design("right", "right", "top", "top", guideWidth = 3)
+    main <- design_bbox(both_right$design, "E")
+    d_box <- design_bbox(both_right$design, "D")
+    c_box <- design_bbox(both_right$design, "C")
+    expect_lt(main$left, d_box$left)
+    expect_lt(d_box$left, c_box$left)
+})
+
+test_that(".heatmap_design() moves column panels between top and bottom", {
+    col_bottom <- .heatmap_design("left", "left", "bottom", "top", guideWidth = 3)
+    main <- design_bbox(col_bottom$design, "E")
+    expect_gt(design_bbox(col_bottom$design, "A")$top, main$top)
+
+    ann_bottom <- .heatmap_design("left", "left", "top", "bottom", guideWidth = 3)
+    main_ab <- design_bbox(ann_bottom$design, "E")
+    expect_gt(design_bbox(ann_bottom$design, "B")$top, main_ab$top)
+    expect_lt(design_bbox(ann_bottom$design, "A")$top, main_ab$top)
+
+    both_bottom <- .heatmap_design("left", "left", "bottom", "bottom", guideWidth = 3)
+    main_bb <- design_bbox(both_bottom$design, "E")
+    b_box <- design_bbox(both_bottom$design, "B")
+    a_box <- design_bbox(both_bottom$design, "A")
+    expect_lt(main_bb$top, b_box$top)
+    expect_lt(b_box$top, a_box$top)
+})
+
+test_that(".heatmap_design() drops omitted panels from the grid and their width/height entry", {
+    default <- .heatmap_design("left", "left", "top", "top", guideWidth = 3)
+
+    no_col_ann <- .heatmap_design("left", "left", "top", NULL, guideWidth = 3)
+    expect_null(design_bbox(no_col_ann$design, "B"))
+    expect_true(grepl("^[^B]+$", no_col_ann$design))
+    expect_equal(length(no_col_ann$heights), length(default$heights) - 1L)
+    # The remaining column dendrogram sits directly above the main panel now
+    # that the annotation panel between them is gone.
+    expect_lt(design_bbox(no_col_ann$design, "A")$top, design_bbox(no_col_ann$design, "E")$top)
+
+    no_row_ann <- .heatmap_design("left", NULL, "top", "top", guideWidth = 3)
+    expect_null(design_bbox(no_row_ann$design, "D"))
+    expect_equal(length(no_row_ann$widths), length(default$widths) - 1L)
+    expect_lt(design_bbox(no_row_ann$design, "C")$left, design_bbox(no_row_ann$design, "E")$left)
+
+    no_row_dendro <- .heatmap_design(NULL, "left", "top", "top", guideWidth = 3)
+    expect_null(design_bbox(no_row_dendro$design, "C"))
+    expect_equal(length(no_row_dendro$widths), length(default$widths) - 1L)
+    expect_lt(design_bbox(no_row_dendro$design, "D")$left, design_bbox(no_row_dendro$design, "E")$left)
+
+    no_col_dendro <- .heatmap_design("left", "left", NULL, "top", guideWidth = 3)
+    expect_null(design_bbox(no_col_dendro$design, "A"))
+    expect_equal(length(no_col_dendro$heights), length(default$heights) - 1L)
+    expect_lt(design_bbox(no_col_dendro$design, "B")$top, design_bbox(no_col_dendro$design, "E")$top)
+
+    # Every dendrogram/annotation panel omitted: only the main panel and the
+    # guide column remain.
+    bare <- .heatmap_design(NULL, NULL, NULL, NULL, guideWidth = 3)
+    expect_identical(bare$design, "EM")
+    expect_equal(bare$widths, c(8, 3))
+    expect_equal(bare$heights, 8)
+})
+
+test_that(".heatmap_design()'s guideWidth sets the guide column's width only", {
+    layout <- .heatmap_design("left", "left", "top", "top", guideWidth = 5)
+    expect_equal(layout$widths, c(1, 1, 8, 5))
+    expect_equal(layout$heights, c(1, 1, 8))
+})

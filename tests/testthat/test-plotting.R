@@ -77,7 +77,11 @@ test_that("multi-variable annotation results compose safely via wrap_plots(list(
         ncol = 1, heights = c(1, 5), guides = "collect"
     )
     expect_s3_class(combined, "patchwork")
-    expect_equal(length(combined$patches$plots) + 1L, 2L)
+    # `length()`/`as.list()` are patchwork's own generic-based way of
+    # inspecting a composition's top-level elements, so checking two remain
+    # here confirms `col_ann`'s internal panels weren't flattened into
+    # `combined`'s own list alongside `main`.
+    expect_equal(length(combined), 2L)
 })
 
 test_that("annotation variables and missing dendrograms are validated", {
@@ -118,10 +122,12 @@ test_that("plotRowData()/plotColData() lay tiles out along their matching axis",
     expect_equal(length(ggplot2::layer_scales(col_plot)$x$get_labels()), ncol(x))
 })
 
-test_that("plotHeatmap()'s guideWidth controls the guide column width", {
+test_that("plotHeatmap()'s guideWidth is validated and accepted", {
+    # `.heatmap_design()`'s own tests cover how `guideWidth` maps onto the
+    # guide column's width; this just checks `plotHeatmap()` validates and
+    # forwards it without erroring.
     x <- make_heatmap()
-    expect_equal(plotHeatmap(x)$patches$layout$widths[[4]], 3)
-    expect_equal(plotHeatmap(x, guideWidth = 5)$patches$layout$widths[[4]], 5)
+    expect_s3_class(plotHeatmap(x, guideWidth = 5), "patchwork")
     expect_error(plotHeatmap(x, guideWidth = 0), "'guideWidth' must be a single positive number")
     expect_error(plotHeatmap(x, guideWidth = c(1, 2)), "'guideWidth' must be a single positive number")
     expect_error(plotHeatmap(x, guideWidth = NA_real_), "'guideWidth' must be a single positive number")
@@ -136,138 +142,62 @@ test_that("plotHeatmap() keeps multi-variable annotation strips aligned with the
     # collectible into the shared guide area.
     x <- make_heatmap()
     SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
-    classes <- vapply(plotHeatmap(x)$patches$plots, function(p) class(p)[[1]], character(1))
+    # `as.list()` is patchwork's own generic-based way of inspecting a
+    # composition's top-level elements.
+    classes <- vapply(as.list(plotHeatmap(x)), function(p) class(p)[[1]], character(1))
     expect_true("patchwork" %in% classes)
     expect_false("wrapped_patch" %in% classes)
 })
 
 test_that("plotHeatmap() packs annotation label text with patchwork::free(type = \"space\")", {
     x <- make_heatmap()
-    classes <- lapply(plotHeatmap(x)$patches$plots, class)
+    classes <- lapply(as.list(plotHeatmap(x)), class)
     expect_true(any(vapply(classes, function(cl) "free_plot" %in% cl, logical(1))))
 })
 
-# `plotHeatmap()`'s panels are composed in a fixed A-M order (column
-# dendrogram, column annotation, row dendrogram, row annotation, main,
-# guide), but a panel is dropped from `$patches$layout$design` entirely
-# when its corresponding `*Side` argument is `NULL` (see `.heatmap_design()`).
-# `letters` lets a test declare which panels are actually present so the
-# lookup index stays correct; it defaults to all six.
-panel_rect <- function(p, letter, letters = c("A", "B", "C", "D", "E", "M")) {
-    idx <- match(letter, letters)
-    design <- p$patches$layout$design
-    list(t = design$t[idx], l = design$l[idx], b = design$b[idx], r = design$r[idx])
-}
-
-test_that("plotHeatmap()'s *Side arguments move panels, not just orient them", {
-    x <- make_heatmap()
-
-    # Defaults: row dendrogram and row annotation both left of the heatmap
-    # (dendrogram further out, annotation adjacent); column dendrogram and
-    # column annotation both above it (dendrogram further out, annotation
-    # adjacent).
-    p <- plotHeatmap(x)
-    main <- panel_rect(p, "E")
-    expect_lt(panel_rect(p, "C")$l, panel_rect(p, "D")$l)
-    expect_lt(panel_rect(p, "D")$l, main$l)
-    expect_lt(panel_rect(p, "A")$t, panel_rect(p, "B")$t)
-    expect_lt(panel_rect(p, "B")$t, main$t)
-
-    # rowDendroSide = "right" moves the row dendrogram panel to the right of
-    # the heatmap, to the opposite side of the (still default, "left") row
-    # annotation panel (previously it only mirrored the dendrogram's
-    # orientation while leaving the panel on the left).
-    p_dendro_right <- plotHeatmap(x, rowDendroSide = "right")
-    main_dr <- panel_rect(p_dendro_right, "E")
-    expect_gt(panel_rect(p_dendro_right, "C")$l, main_dr$l)
-    expect_lt(panel_rect(p_dendro_right, "D")$l, main_dr$l)
-
-    # rowAnnotationSide = "right" moves the row annotation panel to the
-    # right of the heatmap, to the opposite side of the (still default,
-    # "left") row dendrogram panel (previously changing this argument had no
-    # visible effect on the composed layout).
-    p_ann_right <- plotHeatmap(x, rowAnnotationSide = "right")
-    main_ar <- panel_rect(p_ann_right, "E")
-    expect_gt(panel_rect(p_ann_right, "D")$l, main_ar$l)
-    expect_lt(panel_rect(p_ann_right, "C")$l, main_ar$l)
-
-    # With both the dendrogram and annotation moved to the right, the
-    # annotation stays adjacent to the heatmap and the dendrogram sits
-    # further out (mirroring the default "both left" ordering).
-    p_both_right <- plotHeatmap(x, rowDendroSide = "right", rowAnnotationSide = "right")
-    main_br <- panel_rect(p_both_right, "E")
-    expect_lt(main_br$l, panel_rect(p_both_right, "D")$l)
-    expect_lt(panel_rect(p_both_right, "D")$l, panel_rect(p_both_right, "C")$l)
-
-    # colDendroSide = "bottom" moves the column dendrogram panel below the
-    # heatmap.
-    p_col_bottom <- plotHeatmap(x, colDendroSide = "bottom")
-    main_cb <- panel_rect(p_col_bottom, "E")
-    expect_gt(panel_rect(p_col_bottom, "A")$t, main_cb$t)
-})
-
-test_that("plotHeatmap()'s *AnnotationSide arguments accept NULL to omit that panel", {
+test_that("plotHeatmap()'s *Side arguments and panel-omitting options don't error", {
+    # Detailed panel placement/omission coverage (which side each panel
+    # lands on, which grid slot gets dropped, and how widths/heights adjust)
+    # lives in `.heatmap_design()`'s own tests, since `plotHeatmap()` just
+    # forwards these arguments to it unchanged; this only checks that
+    # `plotHeatmap()` builds a valid patchwork for each supported
+    # combination.
     x <- make_heatmap()
     SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
 
-    # `colAnnotationSide = NULL` drops the column annotation panel from the
-    # layout entirely (rather than leaving a reserved but blank slot, as
-    # `showColDendro = FALSE` also does for the dendrogram -- see the test
-    # below).
-    p_no_col_ann <- plotHeatmap(x, colAnnotationSide = NULL)
-    present <- c("A", "C", "D", "E", "M")
-    expect_equal(length(p_no_col_ann$patches$layout$design$t), length(present))
-    main_nca <- panel_rect(p_no_col_ann, "E", letters = present)
-    expect_lt(panel_rect(p_no_col_ann, "A", letters = present)$t, main_nca$t)
-
-    # `rowAnnotationSide = NULL` likewise drops the row annotation panel.
-    p_no_row_ann <- plotHeatmap(x, rowAnnotationSide = NULL)
-    present <- c("A", "B", "C", "E", "M")
-    expect_equal(length(p_no_row_ann$patches$layout$design$t), length(present))
-    main_nra <- panel_rect(p_no_row_ann, "E", letters = present)
-    expect_lt(panel_rect(p_no_row_ann, "C", letters = present)$l, main_nra$l)
-})
-
-test_that("omitted panels don't leave an unreferenced plot_spacer() behind", {
-    # `patchwork::wrap_plots()` silently retains an unused `plot_spacer()` in
-    # `$patches$plots` even when its letter never appears in `design` --
-    # unlike an unused ordinary ggplot, which is dropped entirely. That
-    # leftover spacer visibly distorted the rendered layout (a gap where the
-    # omitted panel used to be) despite `$patches$layout$design` looking
-    # correct, so `plotHeatmap()` must exclude hidden panels from the list
-    # passed to `wrap_plots()` rather than substituting a spacer for them.
-    x <- make_heatmap()
-    SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
-
-    baseline <- length(plotHeatmap(x)$patches$plots)
-    expect_equal(length(plotHeatmap(x, rowAnnotationSide = NULL)$patches$plots), baseline - 1L)
-    expect_equal(length(plotHeatmap(x, colAnnotationSide = NULL)$patches$plots), baseline - 1L)
-    expect_equal(length(plotHeatmap(x, showRowDendro = FALSE)$patches$plots), baseline - 1L)
-    expect_equal(length(plotHeatmap(x, showColDendro = FALSE)$patches$plots), baseline - 1L)
-    expect_equal(
-        length(plotHeatmap(x, showRowDendro = FALSE, showColDendro = FALSE, rowAnnotationSide = NULL)$patches$plots),
-        baseline - 3L
+    expect_s3_class(plotHeatmap(x, rowDendroSide = "right"), "patchwork")
+    expect_s3_class(plotHeatmap(x, rowAnnotationSide = "right"), "patchwork")
+    expect_s3_class(plotHeatmap(x, rowDendroSide = "right", rowAnnotationSide = "right"), "patchwork")
+    expect_s3_class(plotHeatmap(x, colDendroSide = "bottom"), "patchwork")
+    expect_s3_class(plotHeatmap(x, colAnnotationSide = "bottom"), "patchwork")
+    expect_s3_class(plotHeatmap(x, colAnnotationSide = NULL), "patchwork")
+    expect_s3_class(plotHeatmap(x, rowAnnotationSide = NULL), "patchwork")
+    expect_s3_class(plotHeatmap(x, showRowDendro = FALSE), "patchwork")
+    expect_s3_class(plotHeatmap(x, showColDendro = FALSE), "patchwork")
+    expect_s3_class(
+        plotHeatmap(x, showRowDendro = FALSE, showColDendro = FALSE, rowAnnotationSide = NULL, colAnnotationSide = NULL),
+        "patchwork"
     )
 })
 
-test_that("showRowDendro/showColDendro = FALSE drop the dendrogram's reserved grid slot", {
+test_that("omitted panels don't leave an unreferenced plot_spacer() behind", {
+    # `plotHeatmap()` excludes hidden panels from the list passed to
+    # `wrap_plots()` rather than substituting a `plot_spacer()` for them (see
+    # the comment above `panels <- panels[...]` in `plotHeatmap()`), so the
+    # composition's top-level element count (via patchwork's own `length()`
+    # method) should drop by exactly one per omitted panel.
     x <- make_heatmap()
+    SummarizedExperiment::colData(x)$batch <- rep(c("one", "two"), length.out = ncol(x))
 
-    # With the row dendrogram hidden, the row annotation panel (still
-    # present, at its default "left" side) should be adjacent to the main
-    # heatmap panel, not separated by a leftover blank column.
-    p_no_row_dendro <- plotHeatmap(x, showRowDendro = FALSE)
-    present <- c("A", "B", "D", "E", "M")
-    expect_equal(length(p_no_row_dendro$patches$layout$design$t), length(present))
-    main_nrd <- panel_rect(p_no_row_dendro, "E", letters = present)
-    expect_lt(panel_rect(p_no_row_dendro, "D", letters = present)$l, main_nrd$l)
-
-    # Likewise for the column dendrogram.
-    p_no_col_dendro <- plotHeatmap(x, showColDendro = FALSE)
-    present <- c("B", "C", "D", "E", "M")
-    expect_equal(length(p_no_col_dendro$patches$layout$design$t), length(present))
-    main_ncd <- panel_rect(p_no_col_dendro, "E", letters = present)
-    expect_lt(panel_rect(p_no_col_dendro, "B", letters = present)$t, main_ncd$t)
+    baseline <- length(plotHeatmap(x))
+    expect_equal(length(plotHeatmap(x, rowAnnotationSide = NULL)), baseline - 1L)
+    expect_equal(length(plotHeatmap(x, colAnnotationSide = NULL)), baseline - 1L)
+    expect_equal(length(plotHeatmap(x, showRowDendro = FALSE)), baseline - 1L)
+    expect_equal(length(plotHeatmap(x, showColDendro = FALSE)), baseline - 1L)
+    expect_equal(
+        length(plotHeatmap(x, showRowDendro = FALSE, showColDendro = FALSE, rowAnnotationSide = NULL)),
+        baseline - 3L
+    )
 })
 
 test_that("plotHeatmap() rejects sides that don't apply to a panel's axis", {
@@ -288,13 +218,13 @@ test_that("plotHeatmap() rejects sides that don't apply to a panel's axis", {
 
 test_that("plotHeatmap() forwards midpoint and fillTitle to the main panel via '...'", {
     x <- make_heatmap()
-    combined <- plotHeatmap(x, midpoint = 2, fillTitle = "Count")
-    fill_labels <- vapply(combined$patches$plots, function(p) {
+    combined <- as.list(plotHeatmap(x, midpoint = 2, fillTitle = "Count"))
+    fill_labels <- vapply(combined, function(p) {
         if (is.null(p$labels$fill)) NA_character_ else p$labels$fill
     }, character(1))
     expect_true("Count" %in% fill_labels)
 
-    main <- combined$patches$plots[[which(fill_labels == "Count")]]
+    main <- combined[[which(fill_labels == "Count")]]
     expect_equal(main$scales$get_scales("fill")$rescaler(2, from = c(0, 4)), 0.5)
 })
 

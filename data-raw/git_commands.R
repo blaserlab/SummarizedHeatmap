@@ -29,7 +29,14 @@ blaseRtemplates::git_easy_branch(branch = "brad_working")
 # save, add and commit your work but don't push
 blaseRtemplates::write_project_library_catalog()
 gert::git_add("*")
-gert::git_commit("")
+gert::git_commit("Refactor: route dendrogram/order mutations through internal setters
+
+Add .setRowClustering()/.setColClustering() and
+.clearRowClustering()/.clearColClustering() in utils.R to centralize
+writes to the rowDendro/colDendro/rowOrder/colOrder slots. Update
+clusterRows()/clusterCols(), the SummarizedHeatmap() constructor, and
+the `[` subset method to use these helpers instead of direct @ slot
+assignment. No change in public behavior; all existing tests pass.")
 
 # frequently update your working branch from main or master branch
 # this will first update main or master from remote
