@@ -106,6 +106,45 @@ class(colDendro(hm))
 Annotations remain ordinary `rowData` and `colData` and can be read or
 modified through the inherited SummarizedExperiment accessors.
 
+## Constructing from a SummarizedExperiment
+
+A `SummarizedHeatmap` always holds exactly one assay, but the constructor also
+accepts an existing `SummarizedExperiment` directly, which is convenient when
+one is already produced upstream (for example, by an RNA-seq quantification
+or normalization workflow). When the input has a single assay, it is used
+automatically and `rowData`, `colData`, and `metadata` carry over unchanged.
+
+```{r from-se-single}
+se <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(scaled = mat),
+    rowData = row_info,
+    colData = column_info
+)
+hm_from_se <- SummarizedHeatmap(se)
+hm_from_se
+```
+
+When the input has more than one assay, supply `assay` to select one by name
+or by position; the others are dropped from the resulting object.
+
+```{r from-se-multi}
+se_multi <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(raw = mat, scaled = mat / max(abs(mat))),
+    rowData = row_info,
+    colData = column_info
+)
+hm_scaled <- SummarizedHeatmap(se_multi, assay = "scaled")
+SummarizedExperiment::assayNames(hm_scaled)
+```
+
+Omitting `assay` for a multi-assay input, or supplying an unknown name or
+out-of-range index, raises an informative error rather than silently picking
+an assay.
+
+```{r from-se-error, error=TRUE}
+SummarizedHeatmap(se_multi)
+```
+
 # Plot components
 
 `plotHeatmapMain()` returns a regular ggplot. Annotation functions create one
