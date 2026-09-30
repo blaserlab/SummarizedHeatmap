@@ -17,8 +17,7 @@
 clusterRows <- function(x, distMethod = "euclidean", hclustMethod = "average") {
     .checkSummarizedHeatmap(x)
     result <- .cluster_axis(x, 1L, distMethod, hclustMethod)
-    x@rowDendro <- result$dendrogram
-    x@rowOrder <- as.integer(result$order)
+    x <- .setRowClustering(x, result$dendrogram, result$order)
     methods::validObject(x)
     x
 }
@@ -37,8 +36,7 @@ clusterRows <- function(x, distMethod = "euclidean", hclustMethod = "average") {
 clusterCols <- function(x, distMethod = "euclidean", hclustMethod = "average") {
     .checkSummarizedHeatmap(x)
     result <- .cluster_axis(x, 2L, distMethod, hclustMethod)
-    x@colDendro <- result$dendrogram
-    x@colOrder <- as.integer(result$order)
+    x <- .setColClustering(x, result$dendrogram, result$order)
     methods::validObject(x)
     x
 }

@@ -30,6 +30,58 @@ utils::globalVariables(c("position", "label", "x", "y", "xend", "yend", "column"
     as.integer(order)
 }
 
+#' Set row clustering state
+#'
+#' Internal setter that keeps `rowDendro` and `rowOrder` in sync; a
+#' dendrogram is only ever stored alongside the order it implies (or
+#' `NULL` alongside a manually-supplied order).
+#'
+#' @param x A SummarizedHeatmap object.
+#' @param dendrogram A dendrogram, or `NULL`.
+#' @param order Integer row display order.
+#' @return `x` with `rowDendro`/`rowOrder` updated.
+#' @noRd
+.setRowClustering <- function(x, dendrogram, order) {
+    x@rowDendro <- dendrogram
+    x@rowOrder <- as.integer(order)
+    x
+}
+
+#' Set column clustering state
+#'
+#' @inherit .setRowClustering description return
+#' @param x A SummarizedHeatmap object.
+#' @param dendrogram A dendrogram, or `NULL`.
+#' @param order Integer column display order.
+#' @noRd
+.setColClustering <- function(x, dendrogram, order) {
+    x@colDendro <- dendrogram
+    x@colOrder <- as.integer(order)
+    x
+}
+
+#' Clear row clustering state
+#'
+#' Drops any stored row dendrogram and resets the row order to the
+#' natural (identity) order, e.g. after subsetting changes row membership
+#' or order.
+#'
+#' @param x A SummarizedHeatmap object.
+#' @return `x` with `rowDendro` set to `NULL` and `rowOrder` reset.
+#' @noRd
+.clearRowClustering <- function(x) {
+    .setRowClustering(x, NULL, seq_len(nrow(x)))
+}
+
+#' Clear column clustering state
+#'
+#' @inherit .clearRowClustering description return
+#' @param x A SummarizedHeatmap object.
+#' @noRd
+.clearColClustering <- function(x) {
+    .setColClustering(x, NULL, seq_len(ncol(x)))
+}
+
 .cluster_axis <- function(x, margin, distMethod, hclustMethod) {
     n <- if (margin == 1L) nrow(x) else ncol(x)
     if (n < 2L || (margin == 1L && ncol(x) == 0L) ||

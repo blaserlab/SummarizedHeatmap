@@ -75,12 +75,13 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
         rowOrder = seq_len(nrow(mat)), colOrder = seq_len(ncol(mat))
     )
     if (!is.null(rowOrder)) {
-        object@rowOrder <- .normalize_order(object, rowOrder, 1L, "rowOrder")
+        # No dendrogram implied by a manually-supplied order.
+        object <- .setRowClustering(object, NULL, .normalize_order(object, rowOrder, 1L, "rowOrder"))
     } else if (isTRUE(clusterRows)) {
         object <- SummarizedHeatmap::clusterRows(object, distMethod = distMethod, hclustMethod = hclustMethod)
     }
     if (!is.null(colOrder)) {
-        object@colOrder <- .normalize_order(object, colOrder, 2L, "colOrder")
+        object <- .setColClustering(object, NULL, .normalize_order(object, colOrder, 2L, "colOrder"))
     } else if (isTRUE(clusterCols)) {
         object <- SummarizedHeatmap::clusterCols(object, distMethod = distMethod, hclustMethod = hclustMethod)
     }

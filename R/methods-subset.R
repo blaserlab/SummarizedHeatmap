@@ -24,12 +24,10 @@ methods::setMethod("[", "SummarizedHeatmap", function(x, i, j, ..., drop = FALSE
     old_cols <- colnames(x)
     y <- methods::callNextMethod()
     if (!identical(rownames(y), old_rows)) {
-        y@rowDendro <- NULL
-        y@rowOrder <- seq_len(nrow(y))
+        y <- .clearRowClustering(y)
     }
     if (!identical(colnames(y), old_cols)) {
-        y@colDendro <- NULL
-        y@colOrder <- seq_len(ncol(y))
+        y <- .clearColClustering(y)
     }
     methods::validObject(y)
     y
