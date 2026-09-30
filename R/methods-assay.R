@@ -20,8 +20,7 @@
 #'   `SummarizedExperiment` method.
 #' @param ... Additional arguments passed to the `SummarizedExperiment`
 #'   method.
-#' @param value A numeric matrix (or other object accepted by the
-#'   `SummarizedExperiment` method) with the same dimensions and dimnames as
+#' @param value A numeric, non-complex matrix with the same dimensions and dimnames as
 #'   the current assay.
 #' @return An updated, valid SummarizedHeatmap object.
 #' @examples
