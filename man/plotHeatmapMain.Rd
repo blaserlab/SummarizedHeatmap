@@ -10,6 +10,8 @@ plotHeatmapMain(
   high = "red3",
   mid = "white",
   low = "blue4",
+  midpoint = 0,
+  fillTitle = "Value",
   flip = FALSE
 )
 }
@@ -19,6 +21,10 @@ plotHeatmapMain(
 \item{tileColor}{Tile border colour.}
 
 \item{high, mid, low}{Colours for high, midpoint, and low assay values.}
+
+\item{midpoint}{Assay value mapped to \code{mid}.}
+
+\item{fillTitle}{Title for the fill legend.}
 
 \item{flip}{If \code{TRUE}, transpose the visual orientation.}
 }

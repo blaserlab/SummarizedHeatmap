@@ -7,6 +7,8 @@
 #' @param x A SummarizedHeatmap object.
 #' @param tileColor Tile border colour.
 #' @param high,mid,low Colours for high, midpoint, and low assay values.
+#' @param midpoint Assay value mapped to `mid`.
+#' @param fillTitle Title for the fill legend.
 #' @param flip If `TRUE`, transpose the visual orientation.
 #' @return A ggplot object.
 #' @examples
@@ -14,7 +16,8 @@
 #' plotHeatmapMain(SummarizedHeatmap(mat))
 #' @export
 plotHeatmapMain <- function(x, tileColor = "white", high = "red3",
-                            mid = "white", low = "blue4", flip = FALSE) {
+                            mid = "white", low = "blue4", midpoint = 0,
+                            fillTitle = "Value", flip = FALSE) {
     .checkSummarizedHeatmap(x)
     row_ids <- .axis_ids(x, 1L)[rowOrder(x)]
     col_ids <- .axis_ids(x, 2L)[colOrder(x)]
@@ -27,10 +30,10 @@ plotHeatmapMain <- function(x, tileColor = "white", high = "red3",
     if (!flip) {
         ggplot2::ggplot(data, ggplot2::aes(x = column, y = row, fill = value)) +
             ggplot2::geom_tile(colour = tileColor) +
-            ggplot2::scale_fill_gradient2(low = low, mid = mid, high = high) +
+            ggplot2::scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
             ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0)) +
             ggplot2::scale_y_discrete(position = "right", expand = ggplot2::expansion(add = 0)) +
-            ggplot2::labs(x = NULL, y = NULL, fill = "Expression") +
+            ggplot2::labs(x = NULL, y = NULL, fill = fillTitle) +
             ggplot2::theme_minimal() +
             ggplot2::theme(
                 axis.text = ggplot2::element_text(colour = "black"),
@@ -45,10 +48,10 @@ plotHeatmapMain <- function(x, tileColor = "white", high = "red3",
     } else {
         ggplot2::ggplot(data, ggplot2::aes(y = column, x = row, fill = value)) +
             ggplot2::geom_tile(colour = tileColor) +
-            ggplot2::scale_fill_gradient2(low = low, mid = mid, high = high) +
+            ggplot2::scale_fill_gradient2(low = low, mid = mid, high = high, midpoint = midpoint) +
             ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0)) +
             ggplot2::scale_y_discrete(position = "right", expand = ggplot2::expansion(add = 0)) +
-            ggplot2::labs(x = NULL, y = NULL, fill = "Expression") +
+            ggplot2::labs(x = NULL, y = NULL, fill = fillTitle) +
             ggplot2::theme_minimal() +
             ggplot2::theme(
                 axis.text = ggplot2::element_text(colour = "black"),

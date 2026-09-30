@@ -34,6 +34,21 @@ test_that("annotation tiles label their variable with axis text matching the mai
     expect_equal(row_plot$theme$axis.text.x$angle, 90)
 })
 
+test_that("plotHeatmapMain() uses midpoint and fillTitle in the fill scale", {
+    x <- make_heatmap()
+
+    # The midpoint isn't stored as a plain field on the scale; rescaling the
+    # midpoint value itself should land at 0.5 regardless of its range.
+    default_rescaler <- plotHeatmapMain(x)$scales$get_scales("fill")$rescaler
+    expect_equal(default_rescaler(0, from = c(-4, 4)), 0.5)
+    expect_equal(plotHeatmapMain(x)$labels$fill, "Value")
+
+    custom_main <- plotHeatmapMain(x, midpoint = 5, fillTitle = "Count")
+    custom_rescaler <- custom_main$scales$get_scales("fill")$rescaler
+    expect_equal(custom_rescaler(5, from = c(0, 10)), 0.5)
+    expect_equal(custom_main$labels$fill, "Count")
+})
+
 test_that("plotRowData()'s variable-name label sits at the side with free space by default", {
     # In `plotHeatmap()`'s composite grid, a row-axis panel's neighbour
     # above it is always blank regardless of whether the panel is placed to
