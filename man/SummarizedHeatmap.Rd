@@ -80,7 +80,9 @@ mat <- matrix(rnorm(24),
 x <- SummarizedHeatmap(mat)
 validObject(x)
 
-se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat))
+se <- SummarizedExperiment::SummarizedExperiment(
+    assays = list(counts = mat)
+)
 y <- SummarizedHeatmap(se)
 validObject(y)
 SummarizedExperiment::assayNames(y) # "counts", preserved from se

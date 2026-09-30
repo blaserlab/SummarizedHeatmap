@@ -36,16 +36,20 @@
 #'   combined with `patchwork::free(type = "space")`; see Details.
 #' @param tileColor Tile border colour.
 #' @param palette Optional named values passed to `scale_fill_manual()`.
-#' @param showNames Whether to display row or column names on the annotation axis.
+#' @param showNames Whether to display row or column names on the annotation
+#'   axis.
 #' @return A ggplot for one variable, a patchwork for multiple variables, or a
 #'   spacer when no row annotations are present.
 #' @examples
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
-#' rd <- S4Vectors::DataFrame(kind = rep(c("gene", "control"), 2), row.names = letters[1:4])
+#' rd <- S4Vectors::DataFrame(
+#'     kind = rep(c("gene", "control"), 2), row.names = letters[1:4]
+#' )
 #' plotRowData(SummarizedHeatmap(mat, rowData = rd))
 #' @export
-plotRowData <- function(x, vars = NULL, side = "right", tileColor = "white", palette = NULL,
-                        showNames = FALSE) {
+plotRowData <- function(
+    x, vars = NULL, side = "right", tileColor = "white",
+    palette = NULL, showNames = FALSE) {
     .checkSummarizedHeatmap(x)
     # Row annotation tiles are always laid out with row identifiers on the
     # vertical axis (matching the heatmap's rows), so the panel can only sit
@@ -74,11 +78,14 @@ plotRowData <- function(x, vars = NULL, side = "right", tileColor = "white", pal
 #'   spacer when no column annotations are present.
 #' @examples
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
-#' cd <- S4Vectors::DataFrame(group = c("A", "B", "A"), row.names = LETTERS[1:3])
+#' cd <- S4Vectors::DataFrame(
+#'     group = c("A", "B", "A"), row.names = LETTERS[1:3]
+#' )
 #' plotColData(SummarizedHeatmap(mat, colData = cd))
 #' @export
-plotColData <- function(x, vars = NULL, side = "top", tileColor = "white", palette = NULL,
-                        showNames = FALSE) {
+plotColData <- function(
+    x, vars = NULL, side = "top", tileColor = "white",
+    palette = NULL, showNames = FALSE) {
     .checkSummarizedHeatmap(x)
     # Column annotation tiles are always laid out with column identifiers on
     # the horizontal axis (matching the heatmap's columns), so the panel can

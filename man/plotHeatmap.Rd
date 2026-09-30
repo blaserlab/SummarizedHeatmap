@@ -97,7 +97,10 @@ heatmap's own row/column identifier labels. Increase the figure's height
 or width if labels are clipped in that configuration.
 }
 \examples{
-mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
+mat <- matrix(
+    rnorm(24), 6,
+    dimnames = list(paste0("f", 1:6), paste0("s", 1:4))
+)
 x <- SummarizedHeatmap(mat)
 plotHeatmap(x)
 }

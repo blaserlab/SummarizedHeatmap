@@ -37,6 +37,9 @@ ggplot2 layers and scales. The display follows the stored row and column
 orders.
 }
 \examples{
-mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
+mat <- matrix(
+    rnorm(24), 6,
+    dimnames = list(paste0("f", 1:6), paste0("s", 1:4))
+)
 plotHeatmapMain(SummarizedHeatmap(mat))
 }

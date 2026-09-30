@@ -65,29 +65,21 @@
 #'   its own.
 #' @return A patchwork object.
 #' @examples
-#' mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
+#' mat <- matrix(
+#'     rnorm(24), 6,
+#'     dimnames = list(paste0("f", 1:6), paste0("s", 1:4))
+#' )
 #' x <- SummarizedHeatmap(mat)
 #' plotHeatmap(x)
 #' @export
-plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
-                        showRowDendro = TRUE, showColDendro = TRUE,
-                        rowDendroSide = "left", colDendroSide = "top",
-                        rowAnnotationSide = "left", colAnnotationSide = "top",
-                        collectGuides = TRUE, guideWidth = 3, ...) {
+plotHeatmap <- function(
+    x, rowVars = NULL, colVars = NULL,
+    showRowDendro = TRUE, showColDendro = TRUE,
+    rowDendroSide = "left", colDendroSide = "top",
+    rowAnnotationSide = "left", colAnnotationSide = "top",
+    collectGuides = TRUE, guideWidth = 3, ...) {
     .checkSummarizedHeatmap(x)
-    if (!is.numeric(guideWidth) || length(guideWidth) != 1L || is.na(guideWidth) || guideWidth <= 0) {
-        stop("'guideWidth' must be a single positive number", call. = FALSE)
-    }
-    dots <- list(...)
-    if ("flip" %in% names(dots)) {
-        stop(
-            "'flip' is only supported by plotHeatmapMain(), not plotHeatmap(). ",
-            "Flipping just the main panel would misalign it against the ",
-            "annotation and dendrogram panels built around it; call ",
-            "plotHeatmapMain() directly if you want a flipped main panel on its own.",
-            call. = FALSE
-        )
-    }
+    .checkPlotHeatmapArgs(guideWidth, list(...))
     # Row dendrogram/annotation panels sit beside the heatmap body, so they
     # may only move between its left and right; column dendrogram/annotation
     # panels sit above/below it, so they may only move between top and
@@ -96,43 +88,33 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     # naming a side.
     rowDendroSide <- match.arg(rowDendroSide, c("left", "right"))
     colDendroSide <- match.arg(colDendroSide, c("top", "bottom"))
-    if (!is.null(rowAnnotationSide)) rowAnnotationSide <- match.arg(rowAnnotationSide, c("left", "right"))
-    if (!is.null(colAnnotationSide)) colAnnotationSide <- match.arg(colAnnotationSide, c("top", "bottom"))
-    # `free(type = "space")` lets each annotation strip's variable-name axis
-    # text occupy space without reserving room for it in the shared grid, so
-    # annotations with different label lengths still pack tightly against
-    # the heatmap instead of forcing uneven column/row widths.
-    col_data <- if (!is.null(colAnnotationSide) &&
-        (length(colVars) || (is.null(colVars) && ncol(SummarizedExperiment::colData(x))))) {
-        patchwork::free(plotColData(x, vars = colVars, side = colAnnotationSide), type = "space")
-    } else {
-        NULL
+    if (!is.null(rowAnnotationSide)) {
+        rowAnnotationSide <- match.arg(rowAnnotationSide, c("left", "right"))
     }
-    row_data <- if (!is.null(rowAnnotationSide) &&
-        (length(rowVars) || (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x))))) {
-        patchwork::free(plotRowData(x, vars = rowVars, side = rowAnnotationSide), type = "space")
-    } else {
-        NULL
+    if (!is.null(colAnnotationSide)) {
+        colAnnotationSide <- match.arg(colAnnotationSide, c("top", "bottom"))
     }
-    col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else NULL
-    row_dendro <- if (showRowDendro && !is.null(rowDendro(x))) plotRowDendro(x, side = rowDendroSide) else NULL
-    main <- plotHeatmapMain(x, ...)
-    # A dedicated guide-area panel is only needed when guides are collected
-    # into it; otherwise each panel keeps its own legend(s) and no extra
-    # column should be reserved for a shared guide area (see
-    # `.heatmap_design()`'s `guideWidth = NULL` handling below).
-    guide <- if (collectGuides) patchwork::guide_area() else NULL
-    # A hidden/omitted panel's *Side is reset to NULL here so `.heatmap_design()`
-    # drops its letter from the grid entirely, rather than passing through a
-    # side that no longer has a matching panel. `patchwork::wrap_plots()`
-    # would otherwise still reserve a phantom slot for an unused
-    # `plot_spacer()` sitting in `panels` even when its letter never appears
-    # in `design`, leaving a gap where the omitted panel used to be.
+    panels <- .buildHeatmapPanels(
+        x,
+        rowVars = rowVars, colVars = colVars,
+        showRowDendro = showRowDendro, showColDendro = showColDendro,
+        rowDendroSide = rowDendroSide, colDendroSide = colDendroSide,
+        rowAnnotationSide = rowAnnotationSide,
+        colAnnotationSide = colAnnotationSide,
+        collectGuides = collectGuides, ...
+    )
+    # A hidden/omitted panel's *Side is reset to NULL here so
+    # `.heatmap_design()` drops its letter from the grid entirely, rather
+    # than passing through a side that no longer has a matching panel.
+    # `patchwork::wrap_plots()` would otherwise still reserve a phantom slot
+    # for an unused `plot_spacer()` sitting in `panels` even when its letter
+    # never appears in `design`, leaving a gap where the omitted panel used
+    # to be.
     layout <- .heatmap_design(
-        rowDendroSide = if (is.null(row_dendro)) NULL else rowDendroSide,
-        rowAnnotationSide = if (is.null(row_data)) NULL else rowAnnotationSide,
-        colDendroSide = if (is.null(col_dendro)) NULL else colDendroSide,
-        colAnnotationSide = if (is.null(col_data)) NULL else colAnnotationSide,
+        rowDendroSide = if (is.null(panels$D)) NULL else rowDendroSide,
+        rowAnnotationSide = if (is.null(panels$E)) NULL else rowAnnotationSide,
+        colDendroSide = if (is.null(panels$B)) NULL else colDendroSide,
+        colAnnotationSide = if (is.null(panels$C)) NULL else colAnnotationSide,
         guideWidth = if (collectGuides) guideWidth else NULL
     )
     # The `A`/`B`/.../`M` names double as `.heatmap_design()`'s spatial
@@ -140,14 +122,89 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     # `.PANEL_GUIDE_ORDER` -- see its own documentation for why that
     # alphabetical letter identity, not list-literal order, is what actually
     # fixes collected-guide order.
-    panels <- .orderPanelsForGuides(
-        list(A = main, B = col_dendro, C = col_data, D = row_dendro, E = row_data, M = guide)
-    )
+    panels <- .orderPanelsForGuides(panels)
     patchwork::wrap_plots(panels, design = layout$design) +
         patchwork::plot_layout(
             widths = layout$widths, heights = layout$heights,
             guides = if (collectGuides) "collect" else "keep"
         )
+}
+
+# Validate the `guideWidth` and `...` arguments of `plotHeatmap()`. `flip` is
+# rejected here (rather than left to `plotHeatmapMain()`'s own validation)
+# because flipping just the main panel would misalign it against the
+# annotation and dendrogram panels built around it.
+.checkPlotHeatmapArgs <- function(guideWidth, dots) {
+    if (!is.numeric(guideWidth) || length(guideWidth) != 1L ||
+        is.na(guideWidth) || guideWidth <= 0) {
+        stop("'guideWidth' must be a single positive number", call. = FALSE)
+    }
+    if ("flip" %in% names(dots)) {
+        stop(
+            "'flip' is only supported by plotHeatmapMain(), not ",
+            "plotHeatmap(). Flipping just the main panel would misalign it ",
+            "against the annotation and dendrogram panels built around it; ",
+            "call plotHeatmapMain() directly if you want a flipped main ",
+            "panel on its own.",
+            call. = FALSE
+        )
+    }
+    invisible(NULL)
+}
+
+# Construct the named list of component panels (keyed by `.PANEL_GUIDE_ORDER`'s
+# letters) that `plotHeatmap()` arranges with `.heatmap_design()`. Any
+# omitted panel (annotation set to `NULL`, a hidden/absent dendrogram, or a
+# guide area when `collectGuides = FALSE`) is included as `NULL` here and
+# dropped later by `.orderPanelsForGuides()`.
+.buildHeatmapPanels <- function(
+    x, rowVars, colVars, showRowDendro, showColDendro,
+    rowDendroSide, colDendroSide, rowAnnotationSide, colAnnotationSide,
+    collectGuides, ...) {
+    # `free(type = "space")` lets each annotation strip's variable-name axis
+    # text occupy space without reserving room for it in the shared grid, so
+    # annotations with different label lengths still pack tightly against
+    # the heatmap instead of forcing uneven column/row widths.
+    col_data <- if (!is.null(colAnnotationSide) &&
+        (length(colVars) ||
+            (is.null(colVars) && ncol(SummarizedExperiment::colData(x))))) {
+        patchwork::free(
+            plotColData(x, vars = colVars, side = colAnnotationSide),
+            type = "space"
+        )
+    } else {
+        NULL
+    }
+    row_data <- if (!is.null(rowAnnotationSide) &&
+        (length(rowVars) ||
+            (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x))))) {
+        patchwork::free(
+            plotRowData(x, vars = rowVars, side = rowAnnotationSide),
+            type = "space"
+        )
+    } else {
+        NULL
+    }
+    col_dendro <- if (showColDendro && !is.null(colDendro(x))) {
+        plotColDendro(x, side = colDendroSide)
+    } else {
+        NULL
+    }
+    row_dendro <- if (showRowDendro && !is.null(rowDendro(x))) {
+        plotRowDendro(x, side = rowDendroSide)
+    } else {
+        NULL
+    }
+    main <- plotHeatmapMain(x, ...)
+    # A dedicated guide-area panel is only needed when guides are collected
+    # into it; otherwise each panel keeps its own legend(s) and no extra
+    # column should be reserved for a shared guide area (see
+    # `.heatmap_design()`'s `guideWidth = NULL` handling below).
+    guide <- if (collectGuides) patchwork::guide_area() else NULL
+    list(
+        A = main, B = col_dendro, C = col_data, D = row_dendro, E = row_data,
+        M = guide
+    )
 }
 
 # Build the patchwork grid `design` (plus matching `widths`/`heights`) that
@@ -177,7 +234,9 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
 # `guideWidth = NULL` means guides are not being collected, so the "M"
 # guide-area column is dropped from the grid entirely (both `design` and
 # `widths`) rather than reserved as an empty column.
-.heatmap_design <- function(rowDendroSide, rowAnnotationSide, colDendroSide, colAnnotationSide, guideWidth) {
+.heatmap_design <- function(
+    rowDendroSide, rowAnnotationSide, colDendroSide, colAnnotationSide,
+    guideWidth) {
     row_left <- c(
         if (identical(rowDendroSide, "left")) "dendro",
         if (identical(rowAnnotationSide, "left")) "annotation"

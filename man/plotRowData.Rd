@@ -29,7 +29,8 @@ combined with \code{patchwork::free(type = "space")}; see Details.}
 
 \item{palette}{Optional named values passed to \code{scale_fill_manual()}.}
 
-\item{showNames}{Whether to display row or column names on the annotation axis.}
+\item{showNames}{Whether to display row or column names on the annotation
+axis.}
 }
 \value{
 A ggplot for one variable, a patchwork for multiple variables, or a
@@ -63,6 +64,8 @@ figure's height or width if labels are clipped in that configuration.
 }
 \examples{
 mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
-rd <- S4Vectors::DataFrame(kind = rep(c("gene", "control"), 2), row.names = letters[1:4])
+rd <- S4Vectors::DataFrame(
+    kind = rep(c("gene", "control"), 2), row.names = letters[1:4]
+)
 plotRowData(SummarizedHeatmap(mat, rowData = rd))
 }

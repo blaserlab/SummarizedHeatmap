@@ -41,8 +41,9 @@ and their feature and sample metadata are already represented by
 `SummarizedExperiment`. It also lets users continue to work with familiar
 ggplot2 scales, themes, and geoms after making a heatmap component.
 
-This approach complements other heatmap packages. [ComplexHeatmap](https://bioconductor.org/packages/ComplexHeatmap/)
-provides a comprehensive system for arranging heatmaps and annotations. The
+This approach complements other heatmap packages.
+[ComplexHeatmap](https://bioconductor.org/packages/ComplexHeatmap/) provides a
+comprehensive system for arranging heatmaps and annotations. The
 CRAN package [ggheatmapper](https://csgroen.github.io/ggheatmapper/) also uses
 ggplot2 and patchwork for tile-based heatmaps. `SummarizedHeatmap` focuses on a
 different boundary: persistent assay, metadata, order, and clustering state
@@ -239,22 +240,27 @@ qc <- ggplot2::ggplot(
 ```
 
 Component functions also compose directly with `wrap_plots()`'s named-argument
-form, letting a custom `design` string place each panel (and
-`guide_area()`) anywhere in the grid. `palette` on `plotColData()`/`plotRowData()`
-maps annotation levels to specific colours (via `scale_fill_manual()`); a single call's `palette` applies to every variable it plots.
+form, letting a custom `design` string place each panel (and `guide_area()`)
+anywhere in the grid. `palette` on `plotColData()`/`plotRowData()` maps
+annotation levels to specific colours (via `scale_fill_manual()`); a single
+call's `palette` applies to every variable it plots.
 
 ```{r custom-grid}
 row_palette <- c(marker = "#8DA0CB", background = "#E5C494")
-col_palette <- c(control = "#66C2A5", 
-                 treated = "#FC8D62", 
-                 `batch 1` = "#386CB0", 
-                 `batch 2` = "#F0027F")
+col_palette <- c(
+    control = "#66C2A5",
+    treated = "#FC8D62",
+    `batch 1` = "#386CB0",
+    `batch 2` = "#F0027F"
+)
 
 pColDendro <- plotColDendro(hm)
 pColData <- plotColData(hm, palette = col_palette)
 pRowDendro <- plotRowDendro(hm)
 pRowData <- patchwork::free(
-    plotRowData(hm, vars = "feature_class", side = "left", palette = row_palette),
+    plotRowData(
+        hm, vars = "feature_class", side = "left", palette = row_palette
+    ),
     type = "space"
 )
 pMain <- plotHeatmapMain(hm)
@@ -345,7 +351,8 @@ replacement never reclusters automatically:
 
 ```{r assay-replace}
 hm_new_values <- hm
-SummarizedExperiment::assay(hm_new_values) <- SummarizedExperiment::assay(hm_new_values) * -1
+SummarizedExperiment::assay(hm_new_values) <-
+    SummarizedExperiment::assay(hm_new_values) * -1
 is.null(rowDendro(hm_new_values))
 is.null(colDendro(hm_new_values))
 rowOrder(hm_new_values)

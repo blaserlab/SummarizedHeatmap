@@ -50,17 +50,21 @@
 #' x <- SummarizedHeatmap(mat)
 #' validObject(x)
 #'
-#' se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat))
+#' se <- SummarizedExperiment::SummarizedExperiment(
+#'     assays = list(counts = mat)
+#' )
 #' y <- SummarizedHeatmap(se)
 #' validObject(y)
 #' SummarizedExperiment::assayNames(y) # "counts", preserved from se
 #' @export
-SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
-                              clusterRows = TRUE, clusterCols = TRUE,
-                              distMethod = "euclidean", hclustMethod = "average", ...) {
+SummarizedHeatmap <- function(
+    x, assay = NULL, rowOrder = NULL, colOrder = NULL,
+    clusterRows = TRUE, clusterCols = TRUE, distMethod = "euclidean",
+    hclustMethod = "average", ...) {
     if (methods::is(x, "SummarizedExperiment")) {
         assay_name <- .select_assay_name(x, assay)
-        mat <- .validate_heatmap_matrix(SummarizedExperiment::assay(x, assay_name),
+        mat <- .validate_heatmap_matrix(
+            SummarizedExperiment::assay(x, assay_name),
             what = "the selected assay", fillDefaults = FALSE
         )
         se <- SummarizedExperiment::SummarizedExperiment(
@@ -71,7 +75,9 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
         )
     } else {
         mat <- .validate_heatmap_matrix(x)
-        se <- SummarizedExperiment::SummarizedExperiment(assays = list(matrix = mat), ...)
+        se <- SummarizedExperiment::SummarizedExperiment(
+            assays = list(matrix = mat), ...
+        )
     }
 
     object <- methods::new(
@@ -81,14 +87,24 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
     )
     if (!is.null(rowOrder)) {
         # No dendrogram implied by a manually-supplied order.
-        object <- .setRowClustering(object, NULL, .normalize_order(object, rowOrder, 1L, "rowOrder"))
+        object <- .setRowClustering(
+            object, NULL, .normalize_order(object, rowOrder, 1L, "rowOrder")
+        )
     } else if (isTRUE(clusterRows)) {
-        object <- SummarizedHeatmap::clusterRows(object, distMethod = distMethod, hclustMethod = hclustMethod)
+        object <- SummarizedHeatmap::clusterRows(
+            object,
+            distMethod = distMethod, hclustMethod = hclustMethod
+        )
     }
     if (!is.null(colOrder)) {
-        object <- .setColClustering(object, NULL, .normalize_order(object, colOrder, 2L, "colOrder"))
+        object <- .setColClustering(
+            object, NULL, .normalize_order(object, colOrder, 2L, "colOrder")
+        )
     } else if (isTRUE(clusterCols)) {
-        object <- SummarizedHeatmap::clusterCols(object, distMethod = distMethod, hclustMethod = hclustMethod)
+        object <- SummarizedHeatmap::clusterCols(
+            object,
+            distMethod = distMethod, hclustMethod = hclustMethod
+        )
     }
     methods::validObject(object)
     object
@@ -110,19 +126,35 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
     }
     if (fillDefaults) {
         if (is.null(rownames(mat))) {
-            rownames(mat) <- if (nrow(mat)) paste0("row", seq_len(nrow(mat))) else character()
+            rownames(mat) <- if (nrow(mat)) {
+                paste0("row", seq_len(nrow(mat)))
+            } else {
+                character()
+            }
         }
         if (is.null(colnames(mat))) {
-            colnames(mat) <- if (ncol(mat)) paste0("column", seq_len(ncol(mat))) else character()
+            colnames(mat) <- if (ncol(mat)) {
+                paste0("column", seq_len(ncol(mat)))
+            } else {
+                character()
+            }
         }
     }
     if (!is.null(rownames(mat)) &&
-        (anyNA(rownames(mat)) || any(!nzchar(rownames(mat))) || anyDuplicated(rownames(mat)))) {
-        stop("matrix row names must be unique, non-missing, and non-empty", call. = FALSE)
+        (anyNA(rownames(mat)) || any(!nzchar(rownames(mat))) ||
+            anyDuplicated(rownames(mat)))) {
+        stop(
+            "matrix row names must be unique, non-missing, and non-empty",
+            call. = FALSE
+        )
     }
     if (!is.null(colnames(mat)) &&
-        (anyNA(colnames(mat)) || any(!nzchar(colnames(mat))) || anyDuplicated(colnames(mat)))) {
-        stop("matrix column names must be unique, non-missing, and non-empty", call. = FALSE)
+        (anyNA(colnames(mat)) || any(!nzchar(colnames(mat))) ||
+            anyDuplicated(colnames(mat)))) {
+        stop(
+            "matrix column names must be unique, non-missing, and non-empty",
+            call. = FALSE
+        )
     }
     mat
 }
@@ -154,7 +186,10 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
         return(.default_assay_name(assay_names, 1L))
     }
     if (is.null(assay)) {
-        stop("'x' has multiple assays; specify 'assay' by name or index", call. = FALSE)
+        stop(
+            "'x' has multiple assays; specify 'assay' by name or index",
+            call. = FALSE
+        )
     }
     idx <- .validate_assay_selector(assay, assay_names, n_assays)
     .default_assay_name(assay_names, idx)
@@ -171,7 +206,10 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
 .validate_assay_selector <- function(assay, assay_names, n_assays) {
     if (is.character(assay)) {
         if (length(assay) != 1L || anyNA(assay) || !nzchar(assay)) {
-            stop("'assay' must be a single, non-empty assay name", call. = FALSE)
+            stop(
+                "'assay' must be a single, non-empty assay name",
+                call. = FALSE
+            )
         }
         if (!(assay %in% assay_names)) {
             stop(sprintf(
@@ -184,7 +222,13 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
     if (is.numeric(assay)) {
         if (length(assay) != 1L || is.na(assay) || assay != as.integer(assay) ||
             assay < 1L || assay > n_assays) {
-            stop(sprintf("'assay' must be a single integer between 1 and %d", n_assays), call. = FALSE)
+            stop(
+                sprintf(
+                    "'assay' must be a single integer between 1 and %d",
+                    n_assays
+                ),
+                call. = FALSE
+            )
         }
         return(as.integer(assay))
     }

@@ -32,24 +32,33 @@ NULL
 
 #' @rdname assay-set-SummarizedHeatmap
 #' @export
-methods::setMethod("assay<-", signature(x = "SummarizedHeatmap", i = "missing"), function(x, i, ..., value) {
-    y <- methods::callNextMethod()
-    .invalidateStaleClustering(y)
-})
+methods::setMethod(
+    "assay<-", signature(x = "SummarizedHeatmap", i = "missing"),
+    function(x, i, ..., value) {
+        y <- methods::callNextMethod()
+        .invalidateStaleClustering(y)
+    }
+)
 
 #' @rdname assay-set-SummarizedHeatmap
 #' @export
-methods::setMethod("assay<-", signature(x = "SummarizedHeatmap", i = "numeric"), function(x, i, ..., value) {
-    y <- methods::callNextMethod()
-    .invalidateStaleClustering(y)
-})
+methods::setMethod(
+    "assay<-", signature(x = "SummarizedHeatmap", i = "numeric"),
+    function(x, i, ..., value) {
+        y <- methods::callNextMethod()
+        .invalidateStaleClustering(y)
+    }
+)
 
 #' @rdname assay-set-SummarizedHeatmap
 #' @export
-methods::setMethod("assay<-", signature(x = "SummarizedHeatmap", i = "character"), function(x, i, ..., value) {
-    y <- methods::callNextMethod()
-    .invalidateStaleClustering(y)
-})
+methods::setMethod(
+    "assay<-", signature(x = "SummarizedHeatmap", i = "character"),
+    function(x, i, ..., value) {
+        y <- methods::callNextMethod()
+        .invalidateStaleClustering(y)
+    }
+)
 
 #' Replace the assays of a SummarizedHeatmap
 #'
@@ -72,17 +81,23 @@ NULL
 
 #' @rdname assays-set-SummarizedHeatmap
 #' @export
-methods::setMethod("assays<-", signature(x = "SummarizedHeatmap", value = "list"), function(x, ..., value) {
-    y <- methods::callNextMethod()
-    .invalidateStaleClustering(y)
-})
+methods::setMethod(
+    "assays<-", signature(x = "SummarizedHeatmap", value = "list"),
+    function(x, ..., value) {
+        y <- methods::callNextMethod()
+        .invalidateStaleClustering(y)
+    }
+)
 
 #' @rdname assays-set-SummarizedHeatmap
 #' @export
-methods::setMethod("assays<-", signature(x = "SummarizedHeatmap", value = "SimpleList"), function(x, ..., value) {
-    y <- methods::callNextMethod()
-    .invalidateStaleClustering(y)
-})
+methods::setMethod(
+    "assays<-", signature(x = "SummarizedHeatmap", value = "SimpleList"),
+    function(x, ..., value) {
+        y <- methods::callNextMethod()
+        .invalidateStaleClustering(y)
+    }
+)
 
 #' Invalidate cluster-derived state after an assay replacement
 #'

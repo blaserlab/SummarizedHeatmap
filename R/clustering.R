@@ -14,7 +14,8 @@
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' clusterRows(SummarizedHeatmap(mat))
 #' @export
-clusterRows <- function(x, distMethod = "euclidean", hclustMethod = "average") {
+clusterRows <- function(
+    x, distMethod = "euclidean", hclustMethod = "average") {
     .checkSummarizedHeatmap(x)
     result <- .cluster_axis(x, 1L, distMethod, hclustMethod)
     x <- .setRowClustering(x, result$dendrogram, result$order)
@@ -33,7 +34,8 @@ clusterRows <- function(x, distMethod = "euclidean", hclustMethod = "average") {
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' clusterCols(SummarizedHeatmap(mat))
 #' @export
-clusterCols <- function(x, distMethod = "euclidean", hclustMethod = "average") {
+clusterCols <- function(
+    x, distMethod = "euclidean", hclustMethod = "average") {
     .checkSummarizedHeatmap(x)
     result <- .cluster_axis(x, 2L, distMethod, hclustMethod)
     x <- .setColClustering(x, result$dendrogram, result$order)
@@ -49,6 +51,9 @@ clusterCols <- function(x, distMethod = "euclidean", hclustMethod = "average") {
 #' mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
 #' clusterHeatmap(SummarizedHeatmap(mat))
 #' @export
-clusterHeatmap <- function(x, distMethod = "euclidean", hclustMethod = "average") {
-    clusterCols(clusterRows(x, distMethod, hclustMethod), distMethod, hclustMethod)
+clusterHeatmap <- function(
+    x, distMethod = "euclidean", hclustMethod = "average") {
+    clusterCols(
+        clusterRows(x, distMethod, hclustMethod), distMethod, hclustMethod
+    )
 }

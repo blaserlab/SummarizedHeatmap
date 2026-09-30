@@ -29,7 +29,8 @@ more prone to clipping when combined with \code{patchwork::free(type = "space")}
 
 \item{palette}{Optional named values passed to \code{scale_fill_manual()}.}
 
-\item{showNames}{Whether to display row or column names on the annotation axis.}
+\item{showNames}{Whether to display row or column names on the annotation
+axis.}
 }
 \value{
 A ggplot for one variable, a patchwork for multiple variables, or a
@@ -44,6 +45,8 @@ tiles. A single variable returns a ggplot; multiple variables return an
 }
 \examples{
 mat <- matrix(rnorm(12), 4, dimnames = list(letters[1:4], LETTERS[1:3]))
-cd <- S4Vectors::DataFrame(group = c("A", "B", "A"), row.names = LETTERS[1:3])
+cd <- S4Vectors::DataFrame(
+    group = c("A", "B", "A"), row.names = LETTERS[1:3]
+)
 plotColData(SummarizedHeatmap(mat, colData = cd))
 }

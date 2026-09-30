@@ -19,16 +19,19 @@
 #' x <- SummarizedHeatmap(mat)
 #' x[1:3, 1:2]
 #' @export
-methods::setMethod("[", "SummarizedHeatmap", function(x, i, j, ..., drop = FALSE) {
-    old_rows <- rownames(x)
-    old_cols <- colnames(x)
-    y <- methods::callNextMethod()
-    if (!identical(rownames(y), old_rows)) {
-        y <- .clearRowClustering(y)
+methods::setMethod(
+    "[", "SummarizedHeatmap",
+    function(x, i, j, ..., drop = FALSE) {
+        old_rows <- rownames(x)
+        old_cols <- colnames(x)
+        y <- methods::callNextMethod()
+        if (!identical(rownames(y), old_rows)) {
+            y <- .clearRowClustering(y)
+        }
+        if (!identical(colnames(y), old_cols)) {
+            y <- .clearColClustering(y)
+        }
+        methods::validObject(y)
+        y
     }
-    if (!identical(colnames(y), old_cols)) {
-        y <- .clearColClustering(y)
-    }
-    methods::validObject(y)
-    y
-})
+)
