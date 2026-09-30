@@ -9,6 +9,10 @@
   axis's order reset to natural order, while axes without a stored
   dendrogram (e.g. a manual order) are left untouched. Assay replacement
   never reclusters automatically.
+* `SummarizedHeatmap()` now preserves the original assay name when
+  constructing from a `SummarizedExperiment`, instead of always renaming it
+  to `"matrix"`. An explicit `assay` argument is now validated even for a
+  single-assay `SummarizedExperiment`, rather than being silently ignored.
 * AI coding assistants (Posit Assistant, OpenAI Codex) were used during
   development to help with refactoring, testing, and documentation; all
   code was reviewed and is maintained by the package author.

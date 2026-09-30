@@ -6,17 +6,18 @@ test_that("matrix input behaves as before", {
     expect_length(SummarizedExperiment::assays(x), 1L)
 })
 
-test_that("a SummarizedExperiment with a single assay is used automatically", {
+test_that("a SummarizedExperiment with a single assay is used automatically, preserving its name", {
     mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
     se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat))
     x <- SummarizedHeatmap(se)
     expect_s4_class(x, "SummarizedHeatmap")
     expect_identical(SummarizedExperiment::assay(x), mat)
+    expect_identical(SummarizedExperiment::assayNames(x), "counts")
     expect_length(SummarizedExperiment::assays(x), 1L)
     expect_silent(validObject(x))
 })
 
-test_that("a multi-assay SummarizedExperiment requires 'assay' by name or index", {
+test_that("a multi-assay SummarizedExperiment requires 'assay' by name or index, preserving the selected name", {
     mat1 <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
     mat2 <- mat1 * 2
     se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat1, scaled = mat2))
@@ -25,9 +26,11 @@ test_that("a multi-assay SummarizedExperiment requires 'assay' by name or index"
 
     by_name <- SummarizedHeatmap(se, assay = "scaled")
     expect_identical(SummarizedExperiment::assay(by_name), mat2)
+    expect_identical(SummarizedExperiment::assayNames(by_name), "scaled")
 
     by_index <- SummarizedHeatmap(se, assay = 2L)
     expect_identical(SummarizedExperiment::assay(by_index), mat2)
+    expect_identical(SummarizedExperiment::assayNames(by_index), "scaled")
 })
 
 test_that("invalid 'assay' selections are rejected with clear errors", {
@@ -39,6 +42,20 @@ test_that("invalid 'assay' selections are rejected with clear errors", {
     expect_error(SummarizedHeatmap(se, assay = 5L), "between 1 and 2")
     expect_error(SummarizedHeatmap(se, assay = c(1L, 2L)), "single")
     expect_error(SummarizedHeatmap(se, assay = TRUE), "single assay name or index")
+})
+
+test_that("an explicit 'assay' for a single-assay SummarizedExperiment is validated, not ignored", {
+    mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
+    se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat))
+
+    by_name <- SummarizedHeatmap(se, assay = "counts")
+    expect_identical(SummarizedExperiment::assayNames(by_name), "counts")
+
+    by_index <- SummarizedHeatmap(se, assay = 1L)
+    expect_identical(SummarizedExperiment::assayNames(by_index), "counts")
+
+    expect_error(SummarizedHeatmap(se, assay = "bogus"), "must be one of")
+    expect_error(SummarizedHeatmap(se, assay = 2L), "between 1 and 1")
 })
 
 test_that("rowData, colData, and metadata are preserved from a SummarizedExperiment", {

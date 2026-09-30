@@ -113,6 +113,7 @@ accepts an existing `SummarizedExperiment` directly, which is convenient when
 one is already produced upstream (for example, by an RNA-seq quantification
 or normalization workflow). When the input has a single assay, it is used
 automatically and `rowData`, `colData`, and `metadata` carry over unchanged.
+The selected assay's original name is preserved as well.
 
 ```{r from-se-single}
 se <- SummarizedExperiment::SummarizedExperiment(
@@ -122,6 +123,7 @@ se <- SummarizedExperiment::SummarizedExperiment(
 )
 hm_from_se <- SummarizedHeatmap(se)
 hm_from_se
+SummarizedExperiment::assayNames(hm_from_se) # "scaled", preserved from se
 ```
 
 When the input has more than one assay, supply `assay` to select one by name

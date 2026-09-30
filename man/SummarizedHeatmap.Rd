@@ -19,10 +19,12 @@ SummarizedHeatmap(
 \arguments{
 \item{x}{A numeric matrix, or a \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment} object.}
 
-\item{assay}{When \code{x} is a \code{SummarizedExperiment} with more than one
-assay, the name or integer index of the assay to use. Ignored (with a
-single automatically-selected assay) when \code{x} has exactly one assay, and
-unused when \code{x} is a matrix.}
+\item{assay}{When \code{x} is a \code{SummarizedExperiment}, the name or integer
+index of the assay to use. Required when \code{x} has more than one assay;
+optional but still validated when \code{x} has exactly one. Unused when \code{x}
+is a matrix. The selected assay's original name is preserved in the
+resulting \code{SummarizedHeatmap} (falling back to \code{"matrix"} when the
+source assay is unnamed).}
 
 \item{rowOrder}{Optional manual row order, as integer indices or row names.
 Supplying it leaves the row dendrogram unset and takes precedence over
@@ -66,8 +68,9 @@ stable sequential identifiers when \code{x} is a matrix.
 A \code{SummarizedHeatmap} always holds exactly one assay. When \code{x} is a
 \code{SummarizedExperiment} with a single assay, that assay is used
 automatically. When it has multiple assays, \code{assay} must be supplied to
-select one by name or position; \code{rowData}, \code{colData}, and \code{metadata} are
-carried over from \code{x} unchanged.
+select one by name or position. Either way, the selected assay's original
+name is preserved in the resulting \code{SummarizedHeatmap}; \code{rowData},
+\code{colData}, and \code{metadata} are carried over from \code{x} unchanged.
 }
 \examples{
 mat <- matrix(rnorm(24),
@@ -80,4 +83,5 @@ validObject(x)
 se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat))
 y <- SummarizedHeatmap(se)
 validObject(y)
+SummarizedExperiment::assayNames(y) # "counts", preserved from se
 }

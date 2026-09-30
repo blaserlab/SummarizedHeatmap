@@ -9,14 +9,17 @@
 #' A `SummarizedHeatmap` always holds exactly one assay. When `x` is a
 #' `SummarizedExperiment` with a single assay, that assay is used
 #' automatically. When it has multiple assays, `assay` must be supplied to
-#' select one by name or position; `rowData`, `colData`, and `metadata` are
-#' carried over from `x` unchanged.
+#' select one by name or position. Either way, the selected assay's original
+#' name is preserved in the resulting `SummarizedHeatmap`; `rowData`,
+#' `colData`, and `metadata` are carried over from `x` unchanged.
 #'
 #' @param x A numeric matrix, or a [SummarizedExperiment-class] object.
-#' @param assay When `x` is a `SummarizedExperiment` with more than one
-#'   assay, the name or integer index of the assay to use. Ignored (with a
-#'   single automatically-selected assay) when `x` has exactly one assay, and
-#'   unused when `x` is a matrix.
+#' @param assay When `x` is a `SummarizedExperiment`, the name or integer
+#'   index of the assay to use. Required when `x` has more than one assay;
+#'   optional but still validated when `x` has exactly one. Unused when `x`
+#'   is a matrix. The selected assay's original name is preserved in the
+#'   resulting `SummarizedHeatmap` (falling back to `"matrix"` when the
+#'   source assay is unnamed).
 #' @param rowOrder Optional manual row order, as integer indices or row names.
 #'   Supplying it leaves the row dendrogram unset and takes precedence over
 #'   `clusterRows`.
@@ -50,16 +53,18 @@
 #' se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat))
 #' y <- SummarizedHeatmap(se)
 #' validObject(y)
+#' SummarizedExperiment::assayNames(y) # "counts", preserved from se
 #' @export
 SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
                               clusterRows = TRUE, clusterCols = TRUE,
                               distMethod = "euclidean", hclustMethod = "average", ...) {
     if (methods::is(x, "SummarizedExperiment")) {
-        mat <- .validate_heatmap_matrix(.select_assay(x, assay),
+        assay_name <- .select_assay_name(x, assay)
+        mat <- .validate_heatmap_matrix(SummarizedExperiment::assay(x, assay_name),
             what = "the selected assay", fillDefaults = FALSE
         )
         se <- SummarizedExperiment::SummarizedExperiment(
-            assays = list(matrix = mat),
+            assays = stats::setNames(list(mat), assay_name),
             rowData = SummarizedExperiment::rowData(x),
             colData = SummarizedExperiment::colData(x),
             metadata = S4Vectors::metadata(x)
@@ -122,26 +127,48 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
     mat
 }
 
-#' Select a single assay from a SummarizedExperiment
+#' Resolve the name of the assay to use from a SummarizedExperiment
+#'
+#' Validates `assay` (a name, an index, or `NULL`) against the assays of `se`
+#' and resolves it to a single assay name, which is then used to name the
+#' resulting `SummarizedHeatmap`'s assay. When `se` has a single assay,
+#' `assay` is optional but, if supplied, is still validated against that
+#' assay rather than ignored.
 #'
 #' @param se A `SummarizedExperiment` object.
-#' @param assay `NULL`, or the name/index of the assay to select. Required
-#'   (and validated) only when `se` has more than one assay.
-#' @return The selected assay, as returned by
-#'   [SummarizedExperiment::assay()].
+#' @param assay `NULL`, or the name/index of the assay to select.
+#' @return A single string: the name of the selected assay. Unnamed assays
+#'   (where `assayNames()` reports `NA` or `""`) resolve to `"matrix"`, the
+#'   same default used for matrix input.
 #' @noRd
-.select_assay <- function(se, assay) {
+.select_assay_name <- function(se, assay) {
     n_assays <- length(SummarizedExperiment::assays(se))
     if (n_assays == 0L) {
         stop("'x' must contain at least one assay", call. = FALSE)
     }
+    assay_names <- SummarizedExperiment::assayNames(se)
     if (n_assays == 1L) {
-        return(SummarizedExperiment::assay(se, 1L))
+        if (!is.null(assay)) {
+            .validate_assay_selector(assay, assay_names, n_assays)
+        }
+        return(.default_assay_name(assay_names, 1L))
     }
     if (is.null(assay)) {
         stop("'x' has multiple assays; specify 'assay' by name or index", call. = FALSE)
     }
-    assay_names <- SummarizedExperiment::assayNames(se)
+    idx <- .validate_assay_selector(assay, assay_names, n_assays)
+    .default_assay_name(assay_names, idx)
+}
+
+#' Validate an 'assay' selector and resolve it to a positional index
+#'
+#' @param assay The name or index supplied by the caller.
+#' @param assay_names The result of [SummarizedExperiment::assayNames()] on
+#'   the source object.
+#' @param n_assays The number of assays in the source object.
+#' @return The integer position of the selected assay.
+#' @noRd
+.validate_assay_selector <- function(assay, assay_names, n_assays) {
     if (is.character(assay)) {
         if (length(assay) != 1L || anyNA(assay) || !nzchar(assay)) {
             stop("'assay' must be a single, non-empty assay name", call. = FALSE)
@@ -152,14 +179,26 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
                 paste(assay_names, collapse = ", ")
             ), call. = FALSE)
         }
-    } else if (is.numeric(assay)) {
+        return(match(assay, assay_names))
+    }
+    if (is.numeric(assay)) {
         if (length(assay) != 1L || is.na(assay) || assay != as.integer(assay) ||
             assay < 1L || assay > n_assays) {
             stop(sprintf("'assay' must be a single integer between 1 and %d", n_assays), call. = FALSE)
         }
-        assay <- as.integer(assay)
-    } else {
-        stop("'assay' must be a single assay name or index", call. = FALSE)
+        return(as.integer(assay))
     }
-    SummarizedExperiment::assay(se, assay)
+    stop("'assay' must be a single assay name or index", call. = FALSE)
+}
+
+#' Default an assay's name when it is missing, matching matrix-input behavior
+#'
+#' @param assay_names The result of [SummarizedExperiment::assayNames()], or
+#'   `NULL` when the source object has no assay names at all.
+#' @param idx The position of the assay whose name is needed.
+#' @return The assay's name, or `"matrix"` when that name is `NA` or empty.
+#' @noRd
+.default_assay_name <- function(assay_names, idx) {
+    name <- if (is.null(assay_names)) NA_character_ else assay_names[idx]
+    if (is.na(name) || !nzchar(name)) "matrix" else name
 }
