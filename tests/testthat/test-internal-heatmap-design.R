@@ -117,3 +117,13 @@ test_that(".heatmap_design()'s guideWidth sets the guide column's width only", {
     expect_equal(layout$widths, c(1, 1, 8, 5))
     expect_equal(layout$heights, c(1, 1, 8))
 })
+
+test_that(".heatmap_design() omits the guide column entirely when guideWidth is NULL", {
+    layout <- .heatmap_design("left", "left", "top", "top", guideWidth = NULL)
+    expect_null(design_bbox(layout$design, "M"))
+    expect_true(grepl("^[^M]+$", layout$design))
+    expect_identical(layout$design, "##A\n##B\nCDE")
+    # No trailing entry for the guide column's width.
+    expect_equal(layout$widths, c(1, 1, 8))
+    expect_equal(layout$heights, c(1, 1, 8))
+})

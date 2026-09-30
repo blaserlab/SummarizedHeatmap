@@ -116,7 +116,11 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     col_dendro <- if (showColDendro && !is.null(colDendro(x))) plotColDendro(x, side = colDendroSide) else NULL
     row_dendro <- if (showRowDendro && !is.null(rowDendro(x))) plotRowDendro(x, side = rowDendroSide) else NULL
     main <- plotHeatmapMain(x, ...)
-    guide <- patchwork::guide_area()
+    # A dedicated guide-area panel is only needed when guides are collected
+    # into it; otherwise each panel keeps its own legend(s) and no extra
+    # column should be reserved for a shared guide area (see
+    # `.heatmap_design()`'s `guideWidth = NULL` handling below).
+    guide <- if (collectGuides) patchwork::guide_area() else NULL
     # A hidden/omitted panel's *Side is reset to NULL here so `.heatmap_design()`
     # drops its letter from the grid entirely, rather than passing through a
     # side that no longer has a matching panel. `patchwork::wrap_plots()`
@@ -128,7 +132,7 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
         rowAnnotationSide = if (is.null(row_data)) NULL else rowAnnotationSide,
         colDendroSide = if (is.null(col_dendro)) NULL else colDendroSide,
         colAnnotationSide = if (is.null(col_data)) NULL else colAnnotationSide,
-        guideWidth = guideWidth
+        guideWidth = if (collectGuides) guideWidth else NULL
     )
     # The `A`/`B`/.../`M` names double as `.heatmap_design()`'s spatial
     # placement tokens *and* patchwork's construction-order component names;
@@ -160,6 +164,9 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
 # reserving a blank slot for it. `identical()` (rather than `==`) is used
 # throughout so a `NULL` side simply never matches "left"/"right"/"top"/
 # "bottom", instead of raising a length-zero comparison error.
+# `guideWidth = NULL` means guides are not being collected, so the "M"
+# guide-area column is dropped from the grid entirely (both `design` and
+# `widths`) rather than reserved as an empty column.
 .heatmap_design <- function(rowDendroSide, rowAnnotationSide, colDendroSide, colAnnotationSide, guideWidth) {
     row_left <- c(
         if (identical(rowDendroSide, "left")) "dendro",
@@ -193,7 +200,8 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
             else if (hk == "main") col_letters[[vk]]
             else "#"
         }, character(1))
-        paste0(paste(cells, collapse = ""), "M")
+        row <- paste(cells, collapse = "")
+        if (is.null(guideWidth)) row else paste0(row, "M")
     }, character(1))
 
     list(

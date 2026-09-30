@@ -13,6 +13,9 @@
   constructing from a `SummarizedExperiment`, instead of always renaming it
   to `"matrix"`. An explicit `assay` argument is now validated even for a
   single-assay `SummarizedExperiment`, rather than being silently ignored.
+* `plotHeatmap(collectGuides = FALSE)` no longer reserves an empty guide-area
+  column: the `guide_area()` panel and its `guideWidth` column are now
+  omitted from the layout entirely instead of being left blank.
 * AI coding assistants (Posit Assistant, OpenAI Codex) were used during
   development to help with refactoring, testing, and documentation; all
   code was reviewed and is maintained by the package author.

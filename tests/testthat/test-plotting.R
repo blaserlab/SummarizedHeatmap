@@ -135,6 +135,28 @@ test_that("plotHeatmap()'s guideWidth is validated and accepted", {
     expect_error(plotHeatmap(x, rowAnnotationSide = "nowhere"), "'arg' should be one of")
 })
 
+test_that("plotHeatmap() omits the guide-area panel and column when collectGuides = FALSE", {
+    x <- make_heatmap()
+    collected <- plotHeatmap(x, collectGuides = TRUE, guideWidth = 3)
+    kept <- plotHeatmap(x, collectGuides = FALSE, guideWidth = 3)
+
+    # One fewer top-level panel (no `guide_area()`), and no trailing
+    # `guideWidth` entry in the widths vector.
+    expect_equal(length(kept), length(collected) - 1L)
+    expect_equal(kept$patches$layout$widths, collected$patches$layout$widths[-length(collected$patches$layout$widths)])
+
+    collected_classes <- vapply(as.list(collected), function(p) class(p)[[1]], character(1))
+    kept_classes <- vapply(as.list(kept), function(p) class(p)[[1]], character(1))
+    expect_true("guide_area" %in% collected_classes)
+    expect_false("guide_area" %in% kept_classes)
+
+    # Normal per-panel legends are still drawn (multiple "guide-box" grobs)
+    # rather than none at all, i.e. `guides = "keep"` still applies.
+    gt <- patchwork::patchworkGrob(kept)
+    guide_boxes <- gt$grobs[vapply(gt$grobs, function(g) identical(g$name, "guide-box"), logical(1))]
+    expect_gt(length(guide_boxes), 0L)
+})
+
 test_that("plotHeatmap() keeps multi-variable annotation strips aligned with the heatmap", {
     # Annotation results stay unwrapped (see `.annotation_plots()`), so
     # `plotHeatmap()`'s list + `design` composition keeps its panels
