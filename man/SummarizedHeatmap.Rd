@@ -9,6 +9,8 @@ SummarizedHeatmap(
   assay = NULL,
   rowOrder = NULL,
   colOrder = NULL,
+  clusterRows = TRUE,
+  clusterCols = TRUE,
   distMethod = "euclidean",
   hclustMethod = "average",
   ...
@@ -23,10 +25,22 @@ single automatically-selected assay) when \code{x} has exactly one assay, and
 unused when \code{x} is a matrix.}
 
 \item{rowOrder}{Optional manual row order, as integer indices or row names.
-Supplying it leaves the row dendrogram unset.}
+Supplying it leaves the row dendrogram unset and takes precedence over
+\code{clusterRows}.}
 
 \item{colOrder}{Optional manual column order, as integer indices or column
-names. Supplying it leaves the column dendrogram unset.}
+names. Supplying it leaves the column dendrogram unset and takes
+precedence over \code{clusterCols}.}
+
+\item{clusterRows}{Whether to compute a row dendrogram and clustering
+order. Ignored (with no dendrogram computed) when \code{rowOrder} is
+supplied. When \code{FALSE} and \code{rowOrder} is not supplied, rows keep their
+natural order and no dendrogram is stored.}
+
+\item{clusterCols}{Whether to compute a column dendrogram and clustering
+order. Ignored (with no dendrogram computed) when \code{colOrder} is
+supplied. When \code{FALSE} and \code{colOrder} is not supplied, columns keep
+their natural order and no dendrogram is stored.}
 
 \item{distMethod}{Distance method passed to \code{\link[stats:dist]{stats::dist()}}.}
 

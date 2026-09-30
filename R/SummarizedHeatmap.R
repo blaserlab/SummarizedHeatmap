@@ -18,9 +18,19 @@
 #'   single automatically-selected assay) when `x` has exactly one assay, and
 #'   unused when `x` is a matrix.
 #' @param rowOrder Optional manual row order, as integer indices or row names.
-#'   Supplying it leaves the row dendrogram unset.
+#'   Supplying it leaves the row dendrogram unset and takes precedence over
+#'   `clusterRows`.
 #' @param colOrder Optional manual column order, as integer indices or column
-#'   names. Supplying it leaves the column dendrogram unset.
+#'   names. Supplying it leaves the column dendrogram unset and takes
+#'   precedence over `clusterCols`.
+#' @param clusterRows Whether to compute a row dendrogram and clustering
+#'   order. Ignored (with no dendrogram computed) when `rowOrder` is
+#'   supplied. When `FALSE` and `rowOrder` is not supplied, rows keep their
+#'   natural order and no dendrogram is stored.
+#' @param clusterCols Whether to compute a column dendrogram and clustering
+#'   order. Ignored (with no dendrogram computed) when `colOrder` is
+#'   supplied. When `FALSE` and `colOrder` is not supplied, columns keep
+#'   their natural order and no dendrogram is stored.
 #' @param distMethod Distance method passed to [stats::dist()].
 #' @param hclustMethod Linkage method passed to [stats::hclust()]. Defaults to
 #'   average linkage, matching the original constructor.
@@ -42,6 +52,7 @@
 #' validObject(y)
 #' @export
 SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
+                              clusterRows = TRUE, clusterCols = TRUE,
                               distMethod = "euclidean", hclustMethod = "average", ...) {
     if (methods::is(x, "SummarizedExperiment")) {
         mat <- .validate_heatmap_matrix(.select_assay(x, assay),
@@ -63,15 +74,15 @@ SummarizedHeatmap <- function(x, assay = NULL, rowOrder = NULL, colOrder = NULL,
         rowDendro = NULL, colDendro = NULL,
         rowOrder = seq_len(nrow(mat)), colOrder = seq_len(ncol(mat))
     )
-    if (is.null(rowOrder)) {
-        object <- clusterRows(object, distMethod = distMethod, hclustMethod = hclustMethod)
-    } else {
+    if (!is.null(rowOrder)) {
         object@rowOrder <- .normalize_order(object, rowOrder, 1L, "rowOrder")
+    } else if (isTRUE(clusterRows)) {
+        object <- SummarizedHeatmap::clusterRows(object, distMethod = distMethod, hclustMethod = hclustMethod)
     }
-    if (is.null(colOrder)) {
-        object <- clusterCols(object, distMethod = distMethod, hclustMethod = hclustMethod)
-    } else {
+    if (!is.null(colOrder)) {
         object@colOrder <- .normalize_order(object, colOrder, 2L, "colOrder")
+    } else if (isTRUE(clusterCols)) {
+        object <- SummarizedHeatmap::clusterCols(object, distMethod = distMethod, hclustMethod = hclustMethod)
     }
     methods::validObject(object)
     object

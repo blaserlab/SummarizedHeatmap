@@ -56,6 +56,48 @@ test_that("single and empty dimensions are valid and are not clustered", {
     expect_length(colOrder(empty_columns), 0L)
 })
 
+test_that("clusterRows/clusterCols control dendrogram computation", {
+    mat <- matrix(1:12, 4, dimnames = list(letters[1:4], LETTERS[1:3]))
+
+    both <- SummarizedHeatmap(mat)
+    expect_s3_class(rowDendro(both), "dendrogram")
+    expect_s3_class(colDendro(both), "dendrogram")
+    expect_silent(validObject(both))
+
+    neither <- SummarizedHeatmap(mat, clusterRows = FALSE, clusterCols = FALSE)
+    expect_null(rowDendro(neither))
+    expect_null(colDendro(neither))
+    expect_identical(rowOrder(neither), seq_len(nrow(mat)))
+    expect_identical(colOrder(neither), seq_len(ncol(mat)))
+    expect_silent(validObject(neither))
+
+    rows_only <- SummarizedHeatmap(mat, clusterCols = FALSE)
+    expect_s3_class(rowDendro(rows_only), "dendrogram")
+    expect_null(colDendro(rows_only))
+    expect_identical(colOrder(rows_only), seq_len(ncol(mat)))
+    expect_silent(validObject(rows_only))
+
+    cols_only <- SummarizedHeatmap(mat, clusterRows = FALSE)
+    expect_null(rowDendro(cols_only))
+    expect_s3_class(colDendro(cols_only), "dendrogram")
+    expect_identical(rowOrder(cols_only), seq_len(nrow(mat)))
+    expect_silent(validObject(cols_only))
+})
+
+test_that("explicit orders are honored without a dendrogram even when clustering is requested", {
+    mat <- matrix(1:12, 4, dimnames = list(letters[1:4], LETTERS[1:3]))
+
+    x <- SummarizedHeatmap(mat,
+        rowOrder = c("d", "c", "b", "a"), colOrder = c("C", "B", "A"),
+        clusterRows = TRUE, clusterCols = TRUE
+    )
+    expect_identical(rowOrder(x), 4:1)
+    expect_identical(colOrder(x), 3:1)
+    expect_null(rowDendro(x))
+    expect_null(colDendro(x))
+    expect_silent(validObject(x))
+})
+
 test_that("validity rejects corrupt order state", {
     x <- make_heatmap()
     x@rowOrder <- rep(1L, nrow(x))

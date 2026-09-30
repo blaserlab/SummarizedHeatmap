@@ -29,12 +29,11 @@ blaseRtemplates::git_easy_branch(branch = "brad_working")
 # save, add and commit your work but don't push
 blaseRtemplates::write_project_library_catalog()
 gert::git_add("*")
-gert::git_commit("Generalize plotHeatmapMain() defaults for arbitrary numeric assays
+gert::git_commit("Document midpoint/fillTitle pass-through in plotHeatmap()
 
-Add midpoint (default 0) and fillTitle (default \"Value\") arguments
-to plotHeatmapMain(), threading them into scale_fill_gradient2() and
-the fill legend label. Preserves existing low/mid/high/tileColor/flip
-behavior; \"Expression\"-specific default replaced by \"Value\".")
+plotHeatmap() already forwards midpoint/fillTitle to plotHeatmapMain()
+via `...`; clarify this explicitly in the docs and add a test covering
+the pass-through, rather than changing the signature.")
 
 # frequently update your working branch from main or master branch
 # this will first update main or master from remote
