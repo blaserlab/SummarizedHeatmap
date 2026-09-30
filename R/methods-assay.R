@@ -15,6 +15,9 @@
 #' @param i Optional name or index of the assay to replace. Since a
 #'   `SummarizedHeatmap` always holds exactly one assay, this must (when
 #'   supplied) identify that single assay.
+#' @param withDimnames A logical value indicating whether `value`'s
+#'   dimnames must be respected. Passed through to the
+#'   `SummarizedExperiment` method.
 #' @param ... Additional arguments passed to the `SummarizedExperiment`
 #'   method.
 #' @param value A numeric matrix (or other object accepted by the
@@ -64,6 +67,9 @@ methods::setMethod(
 #'
 #' @inherit assay-set-SummarizedHeatmap description
 #' @param x A SummarizedHeatmap object.
+#' @param withDimnames A logical value indicating whether `value`'s
+#'   dimnames must be respected. Passed through to the
+#'   `SummarizedExperiment` method.
 #' @param ... Additional arguments passed to the `SummarizedExperiment`
 #'   method.
 #' @param value A list or `SimpleList` of exactly one assay, with the same

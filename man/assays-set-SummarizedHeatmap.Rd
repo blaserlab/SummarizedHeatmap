@@ -13,6 +13,10 @@
 \arguments{
 \item{x}{A SummarizedHeatmap object.}
 
+\item{withDimnames}{A logical value indicating whether \code{value}'s
+dimnames must be respected. Passed through to the
+\code{SummarizedExperiment} method.}
+
 \item{...}{Additional arguments passed to the \code{SummarizedExperiment}
 method.}
 

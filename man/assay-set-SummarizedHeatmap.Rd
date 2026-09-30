@@ -20,6 +20,10 @@
 \code{SummarizedHeatmap} always holds exactly one assay, this must (when
 supplied) identify that single assay.}
 
+\item{withDimnames}{A logical value indicating whether \code{value}'s
+dimnames must be respected. Passed through to the
+\code{SummarizedExperiment} method.}
+
 \item{...}{Additional arguments passed to the \code{SummarizedExperiment}
 method.}
 
