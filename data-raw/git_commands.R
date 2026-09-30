@@ -29,7 +29,11 @@ blaseRtemplates::git_easy_branch(branch = "brad_working")
 # save, add and commit your work but don't push
 blaseRtemplates::write_project_library_catalog()
 gert::git_add("*")
-gert::git_commit("before first checks with ChatGPT")
+gert::git_commit("Document SummarizedExperiment-based construction in the vignette
+
+Add a Constructing from a SummarizedExperiment subsection covering
+single-assay auto-selection, multi-assay selection via \`assay\`, and
+the error raised when \`assay\` is omitted for a multi-assay input.")
 
 # frequently update your working branch from main or master branch
 # this will first update main or master from remote

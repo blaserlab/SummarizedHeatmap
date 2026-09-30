@@ -55,6 +55,46 @@ test_that("rowData, colData, and metadata are preserved from a SummarizedExperim
     expect_identical(S4Vectors::metadata(x), list(note = "hi"))
 })
 
+test_that("validity requires non-NULL row and column names", {
+    mat <- matrix(1:12, 4, dimnames = list(letters[1:4], LETTERS[1:3]))
+    x <- SummarizedHeatmap(mat)
+
+    no_rownames <- x
+    rownames(no_rownames) <- NULL
+    expect_error(methods::validObject(no_rownames), "row names must not be NULL")
+
+    no_colnames <- x
+    colnames(no_colnames) <- NULL
+    expect_error(methods::validObject(no_colnames), "column names must not be NULL")
+})
+
+test_that("validity rejects NA, empty, or duplicate row/column names", {
+    mat <- matrix(1:12, 4, dimnames = list(letters[1:4], LETTERS[1:3]))
+    x <- SummarizedHeatmap(mat)
+
+    na_rownames <- x
+    rownames(na_rownames)[1] <- NA
+    expect_error(methods::validObject(na_rownames), "row names must not contain NA")
+
+    empty_colnames <- x
+    colnames(empty_colnames)[1] <- ""
+    expect_error(methods::validObject(empty_colnames), "column names must not contain empty strings")
+
+    dup_rownames <- x
+    rownames(dup_rownames)[2] <- rownames(dup_rownames)[1]
+    expect_error(methods::validObject(dup_rownames), "row names must not contain duplicates")
+
+    dup_colnames <- x
+    colnames(dup_colnames)[2] <- colnames(dup_colnames)[1]
+    expect_error(methods::validObject(dup_colnames), "column names must not contain duplicates")
+})
+
+test_that("subsetting that duplicates row or column names is rejected", {
+    x <- make_heatmap()
+    expect_error(x[c(1, 1), ], "row names must not contain duplicates")
+    expect_error(x[, c(1, 1)], "column names must not contain duplicates")
+})
+
 test_that("validity rejects a SummarizedHeatmap constructed with more than one assay", {
     mat1 <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
     mat2 <- mat1 * 2

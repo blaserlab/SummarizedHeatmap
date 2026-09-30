@@ -53,6 +53,27 @@ S4Vectors::setValidity2("SummarizedHeatmap", function(object) {
         }
     }
 
+    check_names <- function(nms, n, dimension) {
+        if (is.null(nms)) {
+            # A zero-length dimension always reports NULL names in base R,
+            # even when explicitly assigned character(0); only require names
+            # to be present when there is at least one row/column to name.
+            if (n > 0L) {
+                errors$messages <- c(errors$messages, sprintf("%s names must not be NULL", dimension))
+            }
+            return(invisible(NULL))
+        }
+        if (anyNA(nms)) {
+            errors$messages <- c(errors$messages, sprintf("%s names must not contain NA", dimension))
+        }
+        if (any(!nzchar(nms))) {
+            errors$messages <- c(errors$messages, sprintf("%s names must not contain empty strings", dimension))
+        }
+        if (anyDuplicated(nms)) {
+            errors$messages <- c(errors$messages, sprintf("%s names must not contain duplicates", dimension))
+        }
+    }
+
     check_dendrogram <- function(dendro, order, n, dimension, ids) {
         if (is.null(dendro)) {
             return(invisible(NULL))
@@ -83,6 +104,8 @@ S4Vectors::setValidity2("SummarizedHeatmap", function(object) {
     check_order(object@colOrder, nc, "column")
     row_ids <- rownames(object)
     col_ids <- colnames(object)
+    check_names(row_ids, nr, "row")
+    check_names(col_ids, nc, "column")
     if (is.null(row_ids)) row_ids <- as.character(seq_len(nr))
     if (is.null(col_ids)) col_ids <- as.character(seq_len(nc))
     check_dendrogram(object@rowDendro, object@rowOrder, nr, "row", row_ids)
