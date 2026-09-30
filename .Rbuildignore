@@ -13,3 +13,7 @@
 ^tests/testthat/Rplots\.pdf$
 ^data-raw/*
 ^\.posit/assistant$
+^data-raw/scratch\.R$
+^data-raw/git_commands\.R$
+^data-raw/debugging_for_assistant\.R$
+^library_catalogs$

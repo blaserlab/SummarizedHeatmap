@@ -18,3 +18,8 @@ inst/data-raw/regenerated_git_commands.R
 vignettes/*_cache/
 vignettes/*_files/
 .posit/assistant
+# Local development / scratch files
+data-raw/scratch.R
+data-raw/git_commands.R
+data-raw/debugging_for_assistant.R
+library_catalogs/
