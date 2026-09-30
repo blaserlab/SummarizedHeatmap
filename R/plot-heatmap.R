@@ -51,7 +51,10 @@
 #'   widths. Increase this when stacked legends (e.g. several annotation
 #'   variables) overflow their column and collide with the heatmap's row
 #'   labels or with each other.
-#' @param ... Additional arguments passed to `plotHeatmapMain()`.
+#' @param ... Additional arguments passed to `plotHeatmapMain()`. `flip` is
+#'   not accepted here -- flipping only the main panel would misalign it
+#'   against the annotation and dendrogram panels arranged around it; call
+#'   `plotHeatmapMain()` directly for a flipped main panel on its own.
 #' @return A patchwork object.
 #' @examples
 #' mat <- matrix(rnorm(24), 6, dimnames = list(paste0("f", 1:6), paste0("s", 1:4)))
@@ -66,6 +69,16 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
     .checkSummarizedHeatmap(x)
     if (!is.numeric(guideWidth) || length(guideWidth) != 1L || is.na(guideWidth) || guideWidth <= 0) {
         stop("'guideWidth' must be a single positive number", call. = FALSE)
+    }
+    dots <- list(...)
+    if ("flip" %in% names(dots)) {
+        stop(
+            "'flip' is only supported by plotHeatmapMain(), not plotHeatmap(). ",
+            "Flipping just the main panel would misalign it against the ",
+            "annotation and dendrogram panels built around it; call ",
+            "plotHeatmapMain() directly if you want a flipped main panel on its own.",
+            call. = FALSE
+        )
     }
     # Row dendrogram/annotation panels sit beside the heatmap body, so they
     # may only move between its left and right; column dendrogram/annotation

@@ -29,18 +29,7 @@ blaseRtemplates::git_easy_branch(branch = "brad_working")
 # save, add and commit your work but don't push
 blaseRtemplates::write_project_library_catalog()
 gert::git_add("*")
-gert::git_commit("Strengthen SummarizedHeatmap validity for dimnames
-
-Add checks to setValidity2 requiring non-NULL, non-NA, non-empty,
-and non-duplicated row/column names (except for zero-length
-dimensions, where base R always reports NULL names). This closes a
-gap where duplicate-name subsetting (e.g. x[c(1, 1), ]) previously
-passed validObject() because the only prior duplicate check lived
-in the dendrogram-labels comparison, which is skipped once the
-dendrogram is cleared on subsetting.
-
-Add focused tests for NULL/NA/empty/duplicate dimnames and for
-duplicate-row/column subsetting.")
+gert::git_commit("updated vignette to make subsetting paragraph more consistent")
 
 # frequently update your working branch from main or master branch
 # this will first update main or master from remote

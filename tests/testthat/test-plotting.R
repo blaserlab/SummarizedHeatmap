@@ -270,3 +270,12 @@ test_that("plotHeatmap() rejects sides that don't apply to a panel's axis", {
     expect_error(plotHeatmap(x, rowAnnotationSide = "top"), "'arg' should be one of")
     expect_error(plotHeatmap(x, rowAnnotationSide = "bottom"), "'arg' should be one of")
 })
+
+test_that("plotHeatmap() rejects 'flip' while plotHeatmapMain() still accepts it", {
+    x <- make_heatmap()
+    # Flipping only the main panel would misalign it against the annotation
+    # and dendrogram panels `plotHeatmap()` arranges around it, so it must
+    # reject 'flip' rather than pass it through via `...`.
+    expect_error(plotHeatmap(x, flip = TRUE), "plotHeatmapMain")
+    expect_s3_class(plotHeatmapMain(x, flip = TRUE), "ggplot")
+})
