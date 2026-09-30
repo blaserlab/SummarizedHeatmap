@@ -16,8 +16,17 @@ export(rowDendro)
 export(rowOrder)
 exportClasses(SummarizedHeatmap)
 exportMethods("[")
+exportMethods("assay<-")
+exportMethods("assays<-")
+importClassesFrom(S4Vectors,SimpleList)
 importClassesFrom(SummarizedExperiment,SummarizedExperiment)
 importFrom(S4Vectors,setValidity2)
+importFrom(SummarizedExperiment,
+  "assay<-",
+  "assays<-",
+  assay,
+  assays
+)
 importFrom(stats,
   as.dendrogram,
   dist,

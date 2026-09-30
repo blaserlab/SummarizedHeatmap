@@ -331,6 +331,28 @@ class(rowDendro(hm_both))
 class(colDendro(hm_both))
 ```
 
+# Replacing assay values
+
+Replacing the assay (`assay(hm) <- ...` or `assays(hm) <- ...`) applies the
+same invalidation rule as subsetting, since a stored dendrogram and its
+implied order are only valid for the assay values they were computed from.
+Whenever a dendrogram is currently stored for an axis, replacing the assay
+clears it and resets that axis's order to natural order; axes with no stored
+dendrogram (e.g. a manually-supplied order) are left untouched. Assay
+replacement never reclusters automatically:
+
+```{r assay-replace}
+hm_new_values <- hm
+SummarizedExperiment::assay(hm_new_values) <- SummarizedExperiment::assay(hm_new_values) * -1
+is.null(rowDendro(hm_new_values))
+is.null(colDendro(hm_new_values))
+rowOrder(hm_new_values)
+colOrder(hm_new_values)
+```
+
+Call `clusterRows()`, `clusterCols()`, or `clusterHeatmap()` afterward to
+recompute clustering against the new values.
+
 # Session information
 
 ```{r session-info}
