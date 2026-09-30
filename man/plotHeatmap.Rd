@@ -60,9 +60,14 @@ A patchwork object.
 }
 \description{
 The component plots remain available through their individual plotting
-functions. This helper arranges them around the main heatmap panel and
-collects guides in grid traversal order: column dendrogram, column
-annotations, row dendrogram, row annotations, then the main heatmap.
+functions. This helper arranges them around the main heatmap panel,
+constructing the components in a deterministic order (column dendrogram,
+column annotation, row dendrogram, row annotation, then the main heatmap)
+so that, when \code{collectGuides = TRUE}, their legends are always collected
+into the shared guide area in that same order, regardless of which side of
+the heatmap each panel is placed on. \code{guide_area()} (the \code{M} panel) only
+controls \emph{where} the collected guides are drawn, not the order they are
+collected in; see \code{.orderPanelsForGuides()} for the ordering itself.
 Column annotation plots are stacked vertically. The row dendrogram and row
 annotation panels move to whichever side of the heatmap \code{rowDendroSide}/
 \code{rowAnnotationSide} request (\code{"left"} or \code{"right"}, both defaulting to

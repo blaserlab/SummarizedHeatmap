@@ -1,9 +1,14 @@
 #' Compose a complete heatmap with patchwork
 #'
 #' The component plots remain available through their individual plotting
-#' functions. This helper arranges them around the main heatmap panel and
-#' collects guides in grid traversal order: column dendrogram, column
-#' annotations, row dendrogram, row annotations, then the main heatmap.
+#' functions. This helper arranges them around the main heatmap panel,
+#' constructing the components in a deterministic order (column dendrogram,
+#' column annotation, row dendrogram, row annotation, then the main heatmap)
+#' so that, when `collectGuides = TRUE`, their legends are always collected
+#' into the shared guide area in that same order, regardless of which side of
+#' the heatmap each panel is placed on. `guide_area()` (the `M` panel) only
+#' controls *where* the collected guides are drawn, not the order they are
+#' collected in; see `.orderPanelsForGuides()` for the ordering itself.
 #' Column annotation plots are stacked vertically. The row dendrogram and row
 #' annotation panels move to whichever side of the heatmap `rowDendroSide`/
 #' `rowAnnotationSide` request (`"left"` or `"right"`, both defaulting to
@@ -125,8 +130,14 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
         colAnnotationSide = if (is.null(col_data)) NULL else colAnnotationSide,
         guideWidth = guideWidth
     )
-    panels <- list(A = col_dendro, B = col_data, C = row_dendro, D = row_data, E = main, M = guide)
-    panels <- panels[!vapply(panels, is.null, logical(1))]
+    # The `A`/`B`/.../`M` names double as `.heatmap_design()`'s spatial
+    # placement tokens *and* patchwork's construction-order component names;
+    # `.orderPanelsForGuides()` fixes the latter to a deterministic sequence
+    # independent of the (possibly side-swapped) spatial layout above -- see
+    # its own documentation for why.
+    panels <- .orderPanelsForGuides(
+        list(A = col_dendro, B = col_data, C = row_dendro, D = row_data, E = main, M = guide)
+    )
     patchwork::wrap_plots(panels, design = layout$design) +
         patchwork::plot_layout(
             widths = layout$widths, heights = layout$heights,
@@ -190,4 +201,30 @@ plotHeatmap <- function(x, rowVars = NULL, colVars = NULL,
         widths = c(unname(row_widths[horiz_order]), guideWidth),
         heights = unname(col_heights[vert_order])
     )
+}
+
+# Fixed sequence of panel names in the order `plotHeatmap()` intends for
+# `patchwork::wrap_plots()` to encounter them: column dendrogram ("A"),
+# column annotation ("B"), row dendrogram ("C"), row annotation ("D"), main
+# heatmap ("E"), then the guide area ("M"). We rely on this construction
+# order -- not `.heatmap_design()`'s `design` string -- to keep collected
+# guides in a consistent sequence, because our own testing shows that
+# `patchwork` gathers "collect"-ed guides in the order named components were
+# assembled into the patch rather than by their position in the grid. That
+# is a behaviour we've observed, not a documented guarantee of patchwork's
+# API, so we pin it down explicitly here instead of depending on incidental
+# list-literal ordering elsewhere in `plotHeatmap()`.
+.PANEL_GUIDE_ORDER <- c("A", "B", "C", "D", "E", "M")
+
+# Reorder a named list of panels (as constructed in `plotHeatmap()`, keyed by
+# `.PANEL_GUIDE_ORDER`'s letters, with `NULL` for any panel omitted for that
+# plot) into `.PANEL_GUIDE_ORDER`, dropping the `NULL` entries. This is the
+# single place that decides construction order for guide collection, kept
+# independent of `.heatmap_design()`'s spatial `design` string so that
+# moving a panel to a different side of the heatmap never silently changes
+# guide order.
+.orderPanelsForGuides <- function(panels) {
+    stopifnot(all(names(panels) %in% .PANEL_GUIDE_ORDER))
+    panels <- panels[!vapply(panels, is.null, logical(1))]
+    panels[intersect(.PANEL_GUIDE_ORDER, names(panels))]
 }
