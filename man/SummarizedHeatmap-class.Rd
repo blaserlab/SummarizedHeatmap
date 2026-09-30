@@ -5,8 +5,11 @@
 \alias{SummarizedHeatmap-class}
 \title{SummarizedHeatmap class}
 \description{
-An assay and its row and column annotations, display orders, and optional
-hierarchical clusterings. The class extends \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}.
+A single assay and its row and column annotations, display orders, and
+optional hierarchical clusterings. The class extends
+\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment} but is restricted to exactly one assay; use
+\code{\link[=SummarizedHeatmap]{SummarizedHeatmap()}} to build one from a matrix or from a
+\code{SummarizedExperiment} (selecting an assay when it holds more than one).
 }
 \section{Slots}{
 

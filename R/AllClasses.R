@@ -3,8 +3,11 @@ methods::setClassUnion("dendrogramOrNULL", c("dendrogram", "NULL"))
 
 #' SummarizedHeatmap class
 #'
-#' An assay and its row and column annotations, display orders, and optional
-#' hierarchical clusterings. The class extends [SummarizedExperiment-class].
+#' A single assay and its row and column annotations, display orders, and
+#' optional hierarchical clusterings. The class extends
+#' [SummarizedExperiment-class] but is restricted to exactly one assay; use
+#' [SummarizedHeatmap()] to build one from a matrix or from a
+#' `SummarizedExperiment` (selecting an assay when it holds more than one).
 #'
 #' @slot rowDendro Row dendrogram, or `NULL` when rows are not clustered.
 #' @slot colDendro Column dendrogram, or `NULL` when columns are not clustered.
@@ -69,6 +72,11 @@ S4Vectors::setValidity2("SummarizedHeatmap", function(object) {
         if (length(labels) != n || !identical(labels, expected)) {
             errors$messages <- c(errors$messages, sprintf("the %s dendrogram labels do not match the stored order", dimension))
         }
+    }
+
+    n_assays <- length(SummarizedExperiment::assays(object))
+    if (n_assays != 1L) {
+        errors$messages <- c(errors$messages, sprintf("a SummarizedHeatmap must contain exactly one assay, not %d", n_assays))
     }
 
     check_order(object@rowOrder, nr, "row")

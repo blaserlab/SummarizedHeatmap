@@ -5,7 +5,8 @@
 \title{Create a SummarizedHeatmap}
 \usage{
 SummarizedHeatmap(
-  mat,
+  x,
+  assay = NULL,
   rowOrder = NULL,
   colOrder = NULL,
   distMethod = "euclidean",
@@ -14,7 +15,12 @@ SummarizedHeatmap(
 )
 }
 \arguments{
-\item{mat}{A numeric matrix.}
+\item{x}{A numeric matrix, or a \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment} object.}
+
+\item{assay}{When \code{x} is a \code{SummarizedExperiment} with more than one
+assay, the name or integer index of the assay to use. Ignored (with a
+single automatically-selected assay) when \code{x} has exactly one assay, and
+unused when \code{x} is a matrix.}
 
 \item{rowOrder}{Optional manual row order, as integer indices or row names.
 Supplying it leaves the row dendrogram unset.}
@@ -29,16 +35,25 @@ average linkage, matching the original constructor.}
 
 \item{...}{Additional arguments passed to
 \code{\link[SummarizedExperiment:SummarizedExperiment]{SummarizedExperiment::SummarizedExperiment()}}, such as \code{rowData} and
-\code{colData}.}
+\code{colData}. Only used when \code{x} is a matrix; ignored when \code{x} is a
+\code{SummarizedExperiment}, whose own annotations are preserved instead.}
 }
 \value{
 A valid \code{SummarizedHeatmap} object.
 }
 \description{
-Create a heatmap representation from a numeric matrix. Rows and columns are
+Create a heatmap representation from a numeric matrix or from a single
+assay of a \link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment} object. Rows and columns are
 clustered by default when their sizes permit; stored orders are integer
 indices into the assay dimensions. Missing dimension names are filled with
-stable sequential identifiers.
+stable sequential identifiers when \code{x} is a matrix.
+}
+\details{
+A \code{SummarizedHeatmap} always holds exactly one assay. When \code{x} is a
+\code{SummarizedExperiment} with a single assay, that assay is used
+automatically. When it has multiple assays, \code{assay} must be supplied to
+select one by name or position; \code{rowData}, \code{colData}, and \code{metadata} are
+carried over from \code{x} unchanged.
 }
 \examples{
 mat <- matrix(rnorm(24),
@@ -47,4 +62,8 @@ mat <- matrix(rnorm(24),
 )
 x <- SummarizedHeatmap(mat)
 validObject(x)
+
+se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = mat))
+y <- SummarizedHeatmap(se)
+validObject(y)
 }
