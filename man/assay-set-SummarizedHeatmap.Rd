@@ -27,8 +27,7 @@ dimnames must be respected. Passed through to the
 \item{...}{Additional arguments passed to the \code{SummarizedExperiment}
 method.}
 
-\item{value}{A numeric matrix (or other object accepted by the
-\code{SummarizedExperiment} method) with the same dimensions and dimnames as
+\item{value}{A numeric, non-complex matrix with the same dimensions and dimnames as
 the current assay.}
 }
 \value{

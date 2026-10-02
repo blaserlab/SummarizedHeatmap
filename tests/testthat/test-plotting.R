@@ -18,17 +18,17 @@ test_that("annotation tiles label their variable with axis text matching the mai
     expect_equal(main_theme$axis.text$colour, "black")
     expect_equal(main_theme$axis.text.y$hjust, 0)
 
-    # Column annotations (side = "top"/"bottom"): the variable-name axis is
-    # `y`, always drawn on the right like the main heatmap's row labels, so
-    # it should be justified and coloured the same way.
+    # Column annotations (side = "left"/"right"): the variable-name axis is
+    # `y`, drawn on the right by default like the main heatmap's row labels,
+    # so it should be justified and coloured the same way.
     col_plot <- plotColData(x, vars = "condition")
     expect_s3_class(col_plot$theme$axis.text.y, "element_text")
     expect_equal(col_plot$theme$axis.text.y$colour, "black")
     expect_equal(col_plot$theme$axis.text.y$hjust, 0)
 
-    # Row annotations (side = "left"/"right"): the variable-name axis is the
+    # Row annotations (side = "top"/"bottom"): the variable-name axis is the
     # (narrow) `x` axis, so the label is rotated vertical to fit.
-    row_plot <- plotRowData(x, vars = "feature_type", side = "right")
+    row_plot <- plotRowData(x, vars = "feature_type", side = "bottom")
     expect_s3_class(row_plot$theme$axis.text.x, "element_text")
     expect_equal(row_plot$theme$axis.text.x$colour, "black")
     expect_equal(row_plot$theme$axis.text.x$angle, 90)
@@ -49,17 +49,20 @@ test_that("plotHeatmapMain() uses midpoint and fillTitle in the fill scale", {
     expect_equal(custom_main$labels$fill, "Count")
 })
 
-test_that("plotRowData()'s variable-name label sits at the side with free space by default", {
-    # In `plotHeatmap()`'s composite grid, a row-axis panel's neighbour
-    # above it is always blank regardless of whether the panel is placed to
-    # the "left" or "right" of the heatmap, so anchoring the label at "top"
-    # keeps it compact on either side; "right" (the more clipping-prone
-    # option per the docs) anchors it at "bottom" instead.
+test_that("plotRowData()'s side argument sets the variable-name label's anchor directly", {
     x <- make_heatmap()
-    left_plot <- plotRowData(x, vars = "feature_type", side = "left")
-    right_plot <- plotRowData(x, vars = "feature_type", side = "right")
-    expect_equal(left_plot$scales$get_scales("x")$position, "top")
-    expect_equal(right_plot$scales$get_scales("x")$position, "bottom")
+    top_plot <- plotRowData(x, vars = "feature_type", side = "top")
+    bottom_plot <- plotRowData(x, vars = "feature_type", side = "bottom")
+    expect_equal(top_plot$scales$get_scales("x")$position, "top")
+    expect_equal(bottom_plot$scales$get_scales("x")$position, "bottom")
+})
+
+test_that("plotColData()'s side argument sets the variable-name label's anchor directly", {
+    x <- make_heatmap()
+    left_plot <- plotColData(x, vars = "condition", side = "left")
+    right_plot <- plotColData(x, vars = "condition", side = "right")
+    expect_equal(left_plot$scales$get_scales("y")$position, "left")
+    expect_equal(right_plot$scales$get_scales("y")$position, "right")
 })
 
 test_that("multi-variable annotation results compose safely via wrap_plots(list(...))", {
@@ -92,20 +95,16 @@ test_that("annotation variables and missing dendrograms are validated", {
     expect_error(plotHeatmapMain("not a heatmap"), "must be a SummarizedHeatmap")
 })
 
-test_that("plotRowData()/plotColData() reject sides that don't apply to their axis", {
-    # Row annotation tiles always place row identifiers on the vertical
-    # axis, so only left/right placement makes sense; top/bottom previously
-    # silently produced a mis-oriented, column-style plot instead of
-    # erroring.
+test_that("plotRowData()/plotColData() reject sides that don't name a position on their label axis", {
+    # Row annotations' variable-name label sits on the narrow x axis, so only
+    # "top"/"bottom" name a meaningful anchor.
     x <- make_heatmap()
-    expect_error(plotRowData(x, vars = "feature_type", side = "top"), "'arg' should be one of")
-    expect_error(plotRowData(x, vars = "feature_type", side = "bottom"), "'arg' should be one of")
-    # Column annotation tiles always place column identifiers on the
-    # horizontal axis, so only top/bottom placement makes sense; left/right
-    # previously silently produced a mis-oriented, row-style plot instead of
-    # erroring.
-    expect_error(plotColData(x, vars = "condition", side = "left"), "'arg' should be one of")
-    expect_error(plotColData(x, vars = "condition", side = "right"), "'arg' should be one of")
+    expect_error(plotRowData(x, vars = "feature_type", side = "left"), "'arg' should be one of")
+    expect_error(plotRowData(x, vars = "feature_type", side = "right"), "'arg' should be one of")
+    # Column annotations' variable-name label sits on the y axis, so only
+    # "left"/"right" name a meaningful anchor.
+    expect_error(plotColData(x, vars = "condition", side = "top"), "'arg' should be one of")
+    expect_error(plotColData(x, vars = "condition", side = "bottom"), "'arg' should be one of")
 })
 
 test_that("plotRowData()/plotColData() lay tiles out along their matching axis", {

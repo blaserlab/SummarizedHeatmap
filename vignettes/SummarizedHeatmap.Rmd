@@ -259,7 +259,7 @@ pColData <- plotColData(hm, palette = col_palette)
 pRowDendro <- plotRowDendro(hm)
 pRowData <- patchwork::free(
     plotRowData(
-        hm, vars = "feature_class", side = "left", palette = row_palette
+        hm, vars = "feature_class", side = "top", palette = row_palette
     ),
     type = "space"
 )

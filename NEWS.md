@@ -20,6 +20,13 @@
   a numeric, non-complex matrix, matching the constructor's own check. This
   means `assay<-`/`assays<-` reject replacements that would leave a
   non-numeric, complex, or non-matrix assay.
+* `plotRowData()`'s and `plotColData()`'s `side` argument now names where the
+  variable-name axis text is anchored, instead of (for `plotColData()`, a
+  no-op) which side of the heatmap the panel sits on: `plotRowData(side =)`
+  now takes `"top"`/`"bottom"` (the narrow axis the label sits on) and
+  `plotColData(side =)` now takes `"left"`/`"right"`. `plotHeatmap()`'s
+  `rowAnnotationSide`/`colAnnotationSide` arguments are unchanged and still
+  control panel placement only.
 * AI coding assistants (Posit Assistant, OpenAI Codex) were used during
   development to help with refactoring, testing, and documentation; all
   code was reviewed and is maintained by the package author.

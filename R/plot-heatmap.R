@@ -32,10 +32,13 @@
 #' `plotRowData()` for the axis text itself). Because `"space"` reserves no
 #' room for that text, it can get clipped at the edge of the plotting device
 #' if there isn't enough surrounding space to draw it -- most likely with the
-#' non-default `rowAnnotationSide = "right"` or `colAnnotationSide =
-#' "bottom"`, where the (possibly rotated) label competes for space with the
-#' heatmap's own row/column identifier labels. Increase the figure's height
-#' or width if labels are clipped in that configuration.
+#' non-default `rowAnnotationSide = "right"`, which anchors the row
+#' annotation's variable-name label at the bottom of its strip, where it
+#' competes for space with the heatmap's own column identifier labels (the
+#' column annotation's variable-name label always sits to the right of its
+#' strip, matching the heatmap's own row labels, regardless of
+#' `colAnnotationSide`). Increase the figure's height or width if labels are
+#' clipped in that configuration.
 #'
 #' @param x A SummarizedHeatmap object.
 #' @param rowVars,colVars Optional annotation variables to display. `NULL`
@@ -47,8 +50,9 @@
 #'   column dendrogram panel is placed on (and oriented toward).
 #' @param rowAnnotationSide,colAnnotationSide Which side of the heatmap the
 #'   annotation panel is placed on, restricted to `"left"`/`"right"` (rows)
-#'   or `"top"`/`"bottom"` (columns). `"right"` (rows) and `"bottom"`
-#'   (columns) place the annotation's variable-name label where it can be
+#'   or `"top"`/`"bottom"` (columns); this only controls panel placement; see
+#'   Details for how it affects the variable-name label's position. `"right"`
+#'   (rows) places the annotation's variable-name label where it can be
 #'   clipped if the figure is too small; see Details. Set to `NULL` to omit
 #'   the annotation panel entirely.
 #' @param collectGuides Collect guides into a shared guide area.
@@ -168,8 +172,13 @@ plotHeatmap <- function(
     col_data <- if (!is.null(colAnnotationSide) &&
         (length(colVars) ||
             (is.null(colVars) && ncol(SummarizedExperiment::colData(x))))) {
+        # `colAnnotationSide` ("top"/"bottom") only places the annotation
+        # panel in the grid; it doesn't name a meaningful position on the
+        # strip's own (left/right) variable-name axis, so `plotColData()`
+        # keeps its default `side` ("right"), matching the main heatmap's
+        # own row labels regardless of which side the strip sits on.
         patchwork::free(
-            plotColData(x, vars = colVars, side = colAnnotationSide),
+            plotColData(x, vars = colVars),
             type = "space"
         )
     } else {
@@ -178,8 +187,14 @@ plotHeatmap <- function(
     row_data <- if (!is.null(rowAnnotationSide) &&
         (length(rowVars) ||
             (is.null(rowVars) && ncol(SummarizedExperiment::rowData(x))))) {
+        # A row-axis panel's neighbour above it is always blank regardless of
+        # whether the panel sits to the "left" or "right" of the heatmap, so
+        # anchoring the variable-name label at "top" keeps it compact on
+        # either side; "right" (the more clipping-prone placement) anchors
+        # it at "bottom" instead, away from the heatmap's own column labels.
+        rowDataSide <- if (rowAnnotationSide == "left") "top" else "bottom"
         patchwork::free(
-            plotRowData(x, vars = rowVars, side = rowAnnotationSide),
+            plotRowData(x, vars = rowVars, side = rowDataSide),
             type = "space"
         )
     } else {

@@ -35,8 +35,9 @@ column dendrogram panel is placed on (and oriented toward).}
 
 \item{rowAnnotationSide, colAnnotationSide}{Which side of the heatmap the
 annotation panel is placed on, restricted to \code{"left"}/\code{"right"} (rows)
-or \code{"top"}/\code{"bottom"} (columns). \code{"right"} (rows) and \code{"bottom"}
-(columns) place the annotation's variable-name label where it can be
+or \code{"top"}/\code{"bottom"} (columns); this only controls panel placement; see
+Details for how it affects the variable-name label's position. \code{"right"}
+(rows) places the annotation's variable-name label where it can be
 clipped if the figure is too small; see Details. Set to \code{NULL} to omit
 the annotation panel entirely.}
 
@@ -92,9 +93,13 @@ instead of forcing extra column/row width (see \code{plotColData()}/
 \code{plotRowData()} for the axis text itself). Because \code{"space"} reserves no
 room for that text, it can get clipped at the edge of the plotting device
 if there isn't enough surrounding space to draw it -- most likely with the
-non-default \code{rowAnnotationSide = "right"} or \code{colAnnotationSide = "bottom"}, where the (possibly rotated) label competes for space with the
-heatmap's own row/column identifier labels. Increase the figure's height
-or width if labels are clipped in that configuration.
+non-default \code{rowAnnotationSide = "right"}, which anchors the row
+annotation's variable-name label at the bottom of its strip, where it
+competes for space with the heatmap's own column identifier labels (the
+column annotation's variable-name label always sits to the right of its
+strip, matching the heatmap's own row labels, regardless of
+\code{colAnnotationSide}). Increase the figure's height or width if labels are
+clipped in that configuration.
 }
 \examples{
 mat <- matrix(

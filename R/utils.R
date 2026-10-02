@@ -180,9 +180,6 @@ utils::globalVariables(
     # `plot_layout(heights = ...)` or misplace panels under
     # `plot_layout(design = ...)`), use `patchwork::wrap_plots(list(...))`
     # instead of the operators; see `plotColData()`/`plotRowData()`.
-    # `plotRowData()`/`plotColData()` restrict `side` to left/right or
-    # top/bottom respectively, so `margin == 2L` (column annotations) always
-    # implies `side %in% c("top", "bottom")` here.
     if (margin == 2L) {
         patchwork::wrap_plots(plots, ncol = 1L, guides = "auto")
     } else {
@@ -191,9 +188,9 @@ utils::globalVariables(
 }
 
 # Build the base plot and axis-text theme elements for a row-axis
-# annotation panel (`side %in% c("left", "right")`), where `position` (row
+# annotation panel (`side %in% c("top", "bottom")`), where `position` (row
 # identifiers) sits on the y axis and `label` (the variable name) sits on
-# the rotated x axis.
+# the rotated x axis, anchored at whichever edge `side` names.
 .annotation_plot_row_layer <- function(
     plot_data, side, tileColor, position_text) {
     p <- ggplot2::ggplot(
@@ -201,39 +198,39 @@ utils::globalVariables(
     ) +
         ggplot2::geom_tile(colour = tileColor) +
         ggplot2::scale_x_discrete(
-            # In `plotHeatmap()`'s composite grid, a row-axis panel's top
-            # neighbour is always blank (column/row-annotation panels only
-            # occupy the main column, not the row-dendrogram/row-annotation
-            # columns), regardless of whether the panel sits to the "left"
-            # or "right" of the heatmap. Anchoring the label at "top"
-            # therefore keeps it compact for both sides; "right" places it
-            # at "bottom" instead, where it is more likely to compete with
-            # the heatmap's own column identifier labels for space (see
-            # `plotRowData()`'s docs).
-            position = if (side == "left") "top" else "bottom",
+            position = side,
             expand = ggplot2::expansion(add = 0)
         ) +
         ggplot2::scale_y_discrete(expand = ggplot2::expansion(add = 0))
     label_text <- ggplot2::element_text(
         colour = "black", angle = 90, vjust = 0.5,
-        hjust = if (side == "left") 0 else 1
+        # ggplot2 convention: `hjust` = 0 anchors text at its near edge.
+        # "top" is the label's near edge when it sits above the tiles.
+        hjust = if (side == "top") 0 else 1
     )
     list(p = p, axis_text = list(x = label_text, y = position_text))
 }
 
 # Build the base plot and axis-text theme elements for a column-axis
-# annotation panel (`side %in% c("top", "bottom")`), where `position`
-# (column identifiers) sits on the x axis and `label` sits on the y axis.
-.annotation_plot_col_layer <- function(plot_data, tileColor, position_text) {
+# annotation panel (`side %in% c("left", "right")`), where `position`
+# (column identifiers) sits on the x axis and `label` sits on the y axis,
+# anchored at whichever edge `side` names.
+.annotation_plot_col_layer <- function(
+    plot_data, side, tileColor, position_text) {
     p <- ggplot2::ggplot(
         plot_data, ggplot2::aes(x = position, y = label, fill = value)
     ) +
         ggplot2::geom_tile(colour = tileColor) +
         ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0)) +
         ggplot2::scale_y_discrete(
-            position = "right", expand = ggplot2::expansion(add = 0)
+            position = side, expand = ggplot2::expansion(add = 0)
         )
-    label_text <- ggplot2::element_text(colour = "black", hjust = 0)
+    label_text <- ggplot2::element_text(
+        colour = "black",
+        # ggplot2 convention: `hjust` = 0 anchors text at its near edge.
+        # "right" is the label's near edge when it sits right of the tiles.
+        hjust = if (side == "right") 0 else 1
+    )
     list(p = p, axis_text = list(x = position_text, y = label_text))
 }
 
@@ -262,10 +259,10 @@ utils::globalVariables(
     } else {
         ggplot2::element_blank()
     }
-    layer <- if (side %in% c("left", "right")) {
+    layer <- if (side %in% c("top", "bottom")) {
         .annotation_plot_row_layer(plot_data, side, tileColor, position_text)
     } else {
-        .annotation_plot_col_layer(plot_data, tileColor, position_text)
+        .annotation_plot_col_layer(plot_data, side, tileColor, position_text)
     }
     p <- layer$p + ggplot2::labs(x = NULL, y = NULL, fill = label) +
         ggplot2::theme_minimal() +

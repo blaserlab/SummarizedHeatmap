@@ -7,7 +7,7 @@
 plotRowData(
   x,
   vars = NULL,
-  side = "right",
+  side = "top",
   tileColor = "white",
   palette = NULL,
   showNames = FALSE
@@ -19,11 +19,12 @@ plotRowData(
 \item{vars}{Character vector of \code{rowData} names. A named vector uses its
 names as displayed labels.}
 
-\item{side}{Which side of the annotation tiles the variable-name label sits
-on: \code{"right"} or \code{"left"} for row annotations (the tiles are always laid
-out with row identifiers on the vertical axis, matching the heatmap's
-rows). \code{"right"} places the label where it is more prone to clipping when
-combined with \code{patchwork::free(type = "space")}; see Details.}
+\item{side}{Which side of the annotation tiles the variable-name label is
+drawn on: \code{"top"} or \code{"bottom"} for row annotations (the tiles are always
+laid out with row identifiers on the vertical axis, matching the
+heatmap's rows, so the label sits on that narrow axis's top or bottom
+edge). \code{"bottom"} places the label where it is more prone to clipping
+when combined with \code{patchwork::free(type = "space")}; see Details.}
 
 \item{tileColor}{Tile border colour.}
 
