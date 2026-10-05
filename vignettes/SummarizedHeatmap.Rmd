@@ -107,6 +107,31 @@ class(colDendro(hm))
 Annotations remain ordinary `rowData` and `colData` and can be read or
 modified through the inherited SummarizedExperiment accessors.
 
+## Manual column ordering
+
+Columns don't have to be ordered by clustering. Passing `colOrder` to the
+constructor -- as column names or integer indices, covering every column
+exactly once -- fixes the display order directly, leaves the column
+dendrogram unset, and takes precedence over `clusterCols`. This suits columns
+with a meaningful order of their own, such as a time course or a predefined
+experimental grouping, rather than one derived from assay similarity.
+`rowOrder` accepts the same two forms for manually ordering rows.
+
+```{r manual-col-order}
+hm_manual_cols <- SummarizedHeatmap(
+    mat,
+    rowData = row_info,
+    colData = column_info,
+    colOrder = rev(colnames(mat))
+)
+colOrder(hm_manual_cols)
+is.null(colDendro(hm_manual_cols))
+```
+
+Rows are still clustered by default here, since `rowOrder`/`clusterRows`
+weren't touched. See [Plot components] for how this shows up in
+`plotHeatmap()`'s layout.
+
 ## Constructing from a SummarizedExperiment
 
 A `SummarizedHeatmap` always holds exactly one assay, but the constructor also
@@ -180,14 +205,23 @@ complete <- plotHeatmap(hm)
 complete
 ```
 
+`hm_manual_cols` (see [Manual column ordering]) has no stored column
+dendrogram, since its column order was supplied manually rather than
+clustered. `plotHeatmap()` omits that panel entirely -- rather than leaving
+it blank -- while the row dendrogram, which is still clustered, draws as
+usual, and the column annotation and heatmap columns simply follow the
+manual order:
+
+```{r manual-col-order-plot}
+plotHeatmap(hm_manual_cols)
+```
+
 # Compose and customize with patchwork
 
 The components can be arranged with patchwork operators, `wrap_plots()`, and
 `plot_layout()`. `free()` releases a panel's alignment on selected sides, and
 `guide_area()` reserves a location for guides when `guides = "collect"` is
-used. In `plotHeatmap()`, the package constructs panels in a fixed grid
-traversal order so collected guides are predictable: the main heatmap,
-column dendrogram, column annotations, row dendrogram, then row annotations.
+used. 
 
 ```{r custom-layout}
 stacked <- patchwork::wrap_plots(
@@ -233,7 +267,7 @@ qc <- ggplot2::ggplot(
     ggplot2::aes(x = sample, y = mean)
 ) +
     ggplot2::geom_point() +
-    ggplot2::labs(x = NULL, y = "Mean assay value") +
+    ggplot2::labs(x = NULL, y = "Mean\nassay\nvalue") +
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 
 (qc / main) + patchwork::plot_layout(heights = c(1, 5))
