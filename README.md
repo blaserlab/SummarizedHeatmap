@@ -2,8 +2,8 @@
 
 `SummarizedHeatmap` represents a clustered, annotated assay as a
 `SummarizedExperiment` subclass. It keeps assay values, `rowData`, `colData`,
-display order, and clustering together, while returning ordinary ggplot2 plots
-that users can compose and customize with patchwork.
+display order, and clustering together.  Plotting functions return ordinary 
+ggplot2 graphics that users can compose and customize with patchwork.
 
 The workflow is: **SummarizedExperiment integration → persistent clustering
 and annotation state → ordinary ggplot components → patchwork composition.**
